@@ -8,8 +8,15 @@ set(CMAKE_C_STANDARD 23)
 
 add_executable(kernel.elf
     kernel/core/kernel.c
+
     kernel/graphics/framebuffer.c
     kernel/graphics/graphics.c
+    kernel/graphics/font.c
+
+    kernel/terminal/terminal.c
+    kernel/ui/ui.c
+    kernel/image/image.c
+    kernel/image/logo.c
 )
 
 target_include_directories(kernel.elf PRIVATE

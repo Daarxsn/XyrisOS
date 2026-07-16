@@ -1,3 +1,0 @@
-/home/purvesh/Projects/XyrisOS/build/CMakeFiles/kernel.elf.dir
-/home/purvesh/Projects/XyrisOS/build/CMakeFiles/edit_cache.dir
-/home/purvesh/Projects/XyrisOS/build/CMakeFiles/rebuild_cache.dir

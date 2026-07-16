@@ -1,7 +1,0 @@
-# ninja log v5
-1	45	1784225594545629430	CMakeFiles/kernel.elf.dir/kernel/core/kernel.c.obj	cbbdff38c506ab88
-2	45	1784225594545629430	CMakeFiles/kernel.elf.dir/kernel/graphics/framebuffer.c.obj	69546753a2e96935
-2	86	1784226200854916978	CMakeFiles/kernel.elf.dir/kernel/graphics/graphics.c.obj	d4d0c55c22ab7803
-46	248	1784225594748642574	kernel.elf	3bc631222699b119
-1	85	1784226490202227210	CMakeFiles/kernel.elf.dir/kernel/core/kernel.c.obj	cbbdff38c506ab88
-85	300	1784226490418239947	kernel.elf	3bc631222699b119
