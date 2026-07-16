@@ -3,6 +3,8 @@
 #include <stdbool.h>
 
 #include "boot/limine.h"
+#include "graphics/framebuffer.h"
+#include "graphics/graphics.h"
 
 /* -------------------------------------------------
    Limine Base Revision
@@ -46,38 +48,50 @@ static void hcf(void)
 }
 
 /* -------------------------------------------------
-   XyrisOS Entry Point
+   XyrisOS Kernel Entry Point
 ------------------------------------------------- */
 
 void kernel_main(void)
 {
+    /* Verify Limine protocol revision */
     if (!LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision))
     {
         hcf();
     }
 
+    /* Verify framebuffer availability */
     if (framebuffer_request.response == NULL ||
         framebuffer_request.response->framebuffer_count < 1)
     {
         hcf();
     }
 
+    /* Get framebuffer supplied by Limine */
     struct limine_framebuffer *framebuffer =
         framebuffer_request.response->framebuffers[0];
 
-    volatile uint32_t *fb = framebuffer->address;
+    /* Initialize framebuffer manager */
+    framebuffer_init(framebuffer);
 
-    for (size_t y = 0; y < framebuffer->height; y++)
-    {
-        for (size_t x = 0; x < framebuffer->width; x++)
-        {
-            uint32_t blue = x * 255 / framebuffer->width;
-            uint32_t green = y * 255 / framebuffer->height;
+clear_screen(0x101820);
 
-            fb[y * (framebuffer->pitch / 4) + x] =
-                (green << 8) | blue;
-        }
-    }
+/* Filled blue rectangle */
+fill_rect(
+    80,
+    80,
+    300,
+    150,
+    0x1E88E5
+);
 
-    hcf();
+/* White border */
+draw_rect(
+    80,
+    80,
+    300,
+    150,
+    0xFFFFFF
+);
+
+hcf();
 }

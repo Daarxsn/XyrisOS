@@ -6,20 +6,18 @@ enable_language(ASM)
 
 set(CMAKE_C_STANDARD 23)
 
-# -------------------------------------------------
-# Kernel Object Files
-# -------------------------------------------------
-
-add_library(kernel_objects OBJECT
+add_executable(kernel.elf
     kernel/core/kernel.c
+    kernel/graphics/framebuffer.c
+    kernel/graphics/graphics.c
 )
 
-target_include_directories(kernel_objects PRIVATE
+target_include_directories(kernel.elf PRIVATE
     kernel
     kernel/include
 )
 
-target_compile_options(kernel_objects PRIVATE
+target_compile_options(kernel.elf PRIVATE
     -ffreestanding
     -fno-stack-protector
     -fno-stack-check
@@ -41,26 +39,11 @@ target_compile_options(kernel_objects PRIVATE
     -Wextra
 )
 
-# -------------------------------------------------
-# Link Kernel
-# -------------------------------------------------
-
-add_custom_command(
-    OUTPUT kernel.elf
-
-    COMMAND ld
-        -m elf_x86_64
-        -nostdlib
-        -static
-        -z max-page-size=0x1000
-        --gc-sections
-        -T ${CMAKE_SOURCE_DIR}/boot/linker.ld
-        -o kernel.elf
-        $<TARGET_OBJECTS:kernel_objects>
-
-    DEPENDS kernel_objects
-)
-
-add_custom_target(kernel ALL
-    DEPENDS kernel.elf
+target_link_options(kernel.elf PRIVATE
+    -nostdlib
+    -static
+    -Wl,-m,elf_x86_64
+    -Wl,-z,max-page-size=0x1000
+    -Wl,--gc-sections
+    -T ${CMAKE_SOURCE_DIR}/boot/linker.ld
 )
