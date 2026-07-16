@@ -1,0 +1,4 @@
+# ninja log v5
+2	36	1784221830015567572	CMakeFiles/kernel_objects.dir/kernel/core/kernel.c.obj	1df6b2471b73d8a
+37	42	1784221830023796562	kernel.elf	bfc6e991519aedaf
+37	42	1784221830023796562	/home/purvesh/Projects/XyrisOS/build/kernel.elf	bfc6e991519aedaf
