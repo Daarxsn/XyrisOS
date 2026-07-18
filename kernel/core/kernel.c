@@ -12,7 +12,7 @@
 
 #include "image/image.h"
 #include "image/logo.h"
-
+#include "cpu/gdt.h"
 /* -------------------------------------------------
    Limine Base Revision
 ------------------------------------------------- */
@@ -89,6 +89,7 @@ void kernel_main(void)
     /* Initialize UI */
 
     ui_init();
+    gdt_init();
 
     /* -------------------------------------------------
        Background
