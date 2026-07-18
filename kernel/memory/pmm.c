@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * pmm.c
  * XyrisOS Kernel
@@ -117,4 +118,3 @@ void pmm_free_page(void* address)
 pmm_stats_t pmm_get_stats(void)
 {
     return stats;
-}

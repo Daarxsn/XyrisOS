@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #ifndef XYRIS_PMM_H
 #define XYRIS_PMM_H
 
@@ -26,5 +27,3 @@ typedef uintptr_t phys_addr_t;
 void pmm_free_page(void* page);
 
 pmm_stats_t pmm_get_stats(void);
-
-#endif

@@ -17,6 +17,9 @@ add_executable(kernel.elf
     kernel/ui/ui.c
     kernel/image/image.c
     kernel/image/logo.c
+    kernel/memory/pmm.c
+kernel/memory/heap.c
+kernel/memory/vmm.c
 )
 
 target_include_directories(kernel.elf PRIVATE
