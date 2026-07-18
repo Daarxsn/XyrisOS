@@ -1,9 +1,7 @@
-<<<<<<< HEAD
 #ifndef XYRIS_PMM_H
 #define XYRIS_PMM_H
 
 #include <stdint.h>
-#include "bitmap.h"
 #include <stddef.h>
 
 #define PAGE_SIZE 4096
@@ -22,8 +20,10 @@ typedef struct
 
 void pmm_init(uint64_t memory_size);
 
-typedef uintptr_t phys_addr_t;
+void* pmm_alloc_page(void);
 
 void pmm_free_page(void* page);
 
 pmm_stats_t pmm_get_stats(void);
+
+#endif

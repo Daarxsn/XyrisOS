@@ -6,6 +6,7 @@
  */
 
 #include "scheduler.h"
+#include <stddef.h>
 
 static thread_t* ready_head = NULL;
 static thread_t* ready_tail = NULL;

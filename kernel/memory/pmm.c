@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*
  * pmm.c
  * XyrisOS Kernel
@@ -20,6 +19,12 @@
 
 static bitmap_t pmm_bitmap;
 
+/*
+ * Temporary bitmap storage.
+ * Supports approximately 1 GiB of RAM.
+ * Phase 2 will replace this using the
+ * bootloader memory map.
+ */
 static uint8_t bitmap_storage[32768];
 
 static pmm_stats_t stats;
@@ -37,16 +42,6 @@ void pmm_init(uint64_t memory_size)
     stats.total_pages = memory_size / PAGE_SIZE;
     stats.used_pages = 0;
     stats.free_pages = stats.total_pages;
-
-    /*
-     * Phase 1:
-     * Temporary bitmap storage.
-     *
-     * Later this will come from the bootloader
-     * or kernel memory reservation.
-     */
-
-    static uint8_t bitmap_storage[32768];
 
     bitmap_init(
         &pmm_bitmap,
@@ -75,14 +70,10 @@ void* pmm_alloc_page(void)
     stats.free_memory -= PAGE_SIZE;
 
     /*
-    * Phase 1:
-    * Physical memory is assumed to be identity-mapped,
-    * so physical addresses are returned as pointers.
-    * This will change when the Virtual Memory Manager
-    * is implemented.
-    */
-
-    return (void*)((uintptr_t)page * PAGE_SIZE);
+     * Phase 1:
+     * Physical memory is assumed to be identity-mapped.
+     */
+    return (void *)((uintptr_t)page * PAGE_SIZE);
 }
 
 /* --------------------------------------------------
@@ -94,9 +85,9 @@ void pmm_free_page(void* address)
     if (address == NULL)
         return;
 
-    size_t page =
-        ((uintptr_t)address) / PAGE_SIZE;
-        if (page >= stats.total_pages)
+    size_t page = ((uintptr_t)address) / PAGE_SIZE;
+
+    if (page >= stats.total_pages)
         return;
 
     if (!bitmap_test(&pmm_bitmap, page))
@@ -118,3 +109,4 @@ void pmm_free_page(void* address)
 pmm_stats_t pmm_get_stats(void)
 {
     return stats;
+}

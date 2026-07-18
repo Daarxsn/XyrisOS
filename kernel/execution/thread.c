@@ -15,7 +15,7 @@ void thread_init(void)
     next_tid = 1;
 }
 
-thread_t* thread_create(void (*entry)(void))
+thread_t* thread_create(void)
 {
     thread_t* thread = (thread_t*)kmalloc(sizeof(thread_t));
 

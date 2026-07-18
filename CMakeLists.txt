@@ -20,6 +20,15 @@ add_executable(kernel.elf
     kernel/memory/pmm.c
 kernel/memory/heap.c
 kernel/memory/vmm.c
+kernel/memory/bitmap.c
+
+kernel/memory/pmm.c
+kernel/memory/heap.c
+kernel/memory/vmm.c
+
+kernel/execution/thread.c
+kernel/execution/execution.c
+kernel/execution/scheduler.c
 )
 
 target_include_directories(kernel.elf PRIVATE
