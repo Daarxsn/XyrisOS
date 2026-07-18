@@ -24,3 +24,10 @@ add_executable(test_runner
 target_include_directories(test_runner PRIVATE
     include
 )
+
+enable_testing()
+
+add_test(
+    NAME XyrisOS_System_Tests
+    COMMAND test_runner
+)
