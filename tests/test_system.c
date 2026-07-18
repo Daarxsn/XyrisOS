@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "../simulator/include/system.h"
 
@@ -8,15 +7,15 @@
     {                                     \
         if (!(condition))                 \
         {                                 \
-            printf("[FAIL] %s\n", message);\
+            printf("[FAIL] %s\n", message); \
             return 1;                     \
         }                                 \
         printf("[PASS] %s\n", message);   \
     } while (0)
 
-int main(void)
+int test_system(void)
 {
-    printf("Running XyrisOS System Tests...\n\n");
+    printf("\nRunning System Tests...\n");
 
     system_init();
 
@@ -35,7 +34,7 @@ int main(void)
     ASSERT(system_state.ram_mb == 64,
            "System should initialize with 64 MB RAM");
 
-    printf("\nAll system tests passed!\n");
+    printf("System tests passed!\n");
 
     return 0;
 }

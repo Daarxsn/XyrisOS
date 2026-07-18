@@ -15,11 +15,12 @@ add_executable(XyrisSim
     src/system.c
 )
 
-add_executable(test_system
+add_executable(test_runner
+    ../tests/test_runner.c
     ../tests/test_system.c
     src/system.c
 )
 
-target_include_directories(test_system PRIVATE
+target_include_directories(test_runner PRIVATE
     include
 )
