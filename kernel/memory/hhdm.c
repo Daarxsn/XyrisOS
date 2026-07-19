@@ -4,6 +4,7 @@
  *
  * Higher Half Direct Map
  */
+#include <stddef.h>
 
 #include "hhdm.h"
 
