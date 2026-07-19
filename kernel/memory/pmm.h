@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #ifndef XYRIS_PMM_H
 #define XYRIS_PMM_H
 
