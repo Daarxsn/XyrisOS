@@ -286,19 +286,26 @@ void pmm_free_page(phys_addr_t page)
    Free Multiple Physical Pages
 -------------------------------------------------- */
 
-void pmm_free_pages(phys_addr_t page, size_t count)
+void pmm_free_pages(
+    phys_addr_t page,
+    size_t count)
 {
     size_t first = pmm_page_index(page);
 
     for (size_t i = 0; i < count; i++)
     {
-        if (bitmap_test(&frame_bitmap, first + i))
-        {
-            bitmap_clear(&frame_bitmap, first + i);
+        size_t current = first + i;
 
-            stats.used_pages--;
-            stats.free_pages++;
-        }
+        if (current >= stats.total_pages)
+            break;
+
+        if (!bitmap_test(&frame_bitmap, current))
+            continue;
+
+        bitmap_clear(&frame_bitmap, current);
+
+        stats.used_pages--;
+        stats.free_pages++;
     }
 }
 
