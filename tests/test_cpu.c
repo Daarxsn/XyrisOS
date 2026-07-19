@@ -2,15 +2,15 @@
 
 #include "../simulator/include/cpu.h"
 
-#define ASSERT(condition, message)        \
-    do                                    \
-    {                                     \
-        if (!(condition))                 \
-        {                                 \
+#define ASSERT(condition, message)       \
+    do                                   \
+    {                                    \
+        if (!(condition))                \
+        {                                \
             printf("[FAIL] %s\n", message); \
-            return 1;                     \
-        }                                 \
-        printf("[PASS] %s\n", message);   \
+            return 1;                    \
+        }                                \
+        printf("[PASS] %s\n", message);  \
     } while (0)
 
 int test_cpu(void)
@@ -26,6 +26,11 @@ int test_cpu(void)
 
     ASSERT(cpu_ready == 1,
            "CPU should be ready after initialization");
+
+    cpu_init();
+
+    ASSERT(cpu_ready == 1,
+           "CPU should remain ready after repeated initialization");
 
     printf("CPU tests passed!\n");
 
