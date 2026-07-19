@@ -23,14 +23,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build gcc
 
-      - name: Configure simulator
+      - name: Run simulator test suite
         run: |
-          cmake -S simulator -B simulator/build -G Ninja
-
-      - name: Build simulator
-        run: |
-          cmake --build simulator/build
-
-      - name: Run tests
-        run: |
-          ctest --test-dir simulator/build --output-on-failure
+          ./scripts/simulator-test.sh
