@@ -2,15 +2,15 @@
 
 #include "../simulator/include/memory.h"
 
-#define ASSERT(condition, message)        \
-    do                                    \
-    {                                     \
-        if (!(condition))                 \
-        {                                 \
+#define ASSERT(condition, message)       \
+    do                                   \
+    {                                    \
+        if (!(condition))                \
+        {                                \
             printf("[FAIL] %s\n", message); \
-            return 1;                     \
-        }                                 \
-        printf("[PASS] %s\n", message);   \
+            return 1;                    \
+        }                                \
+        printf("[PASS] %s\n", message);  \
     } while (0)
 
 int test_memory(void)
@@ -26,6 +26,11 @@ int test_memory(void)
 
     ASSERT(memory_ready == 1,
            "Memory should be ready after initialization");
+
+    memory_init();
+
+    ASSERT(memory_ready == 1,
+           "Memory should remain ready after repeated initialization");
 
     printf("Memory tests passed!\n");
 
