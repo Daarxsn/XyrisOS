@@ -9,12 +9,21 @@ set(CMAKE_C_STANDARD 23)
 add_executable(kernel.elf
     kernel/core/kernel.c
 
+    # Foundation
+    kernel/foundation/ukom.c
+
+    # Graphics
     kernel/graphics/framebuffer.c
     kernel/graphics/graphics.c
     kernel/graphics/font.c
 
+    # Terminal
     kernel/terminal/terminal.c
+
+    # UI
     kernel/ui/ui.c
+
+    # Images
     kernel/image/image.c
     kernel/image/logo.c
 )

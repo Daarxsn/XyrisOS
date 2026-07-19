@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "boot/limine.h"
-
+#include "foundation/ukom.h"
 #include "graphics/framebuffer.h"
 #include "graphics/graphics.h"
 #include "graphics/font.h"
@@ -89,6 +89,7 @@ void kernel_main(void)
     /* Initialize UI */
 
     ui_init();
+    xkobject_init();
 
     /* -------------------------------------------------
        Background
