@@ -136,28 +136,17 @@ static void pmm_initialize_bitmap(const memory_region_t *region)
     size_t first =
     pmm_page_index(bitmap_phys);
 
-    for (size_t i = 0; i < bitmap_pages; i++)
-    {
-        bitmap_set(&frame_bitmap, first + i);
-    }
-
-    stats.reserved_pages += bitmap_pages;
-    stats.free_pages -= bitmap_pages;
+    pmm_reserve(bitmap_phys, bitmap_pages);
 }
 
 static void pmm_reserve_region(
     phys_addr_t base,
     uint64_t length)
 {
-    size_t first = pmm_page_index(base);
-
     size_t pages =
         (length + PAGE_SIZE - 1) / PAGE_SIZE;
 
-    for (size_t i = 0; i < pages; i++)
-    {
-        bitmap_set(&frame_bitmap, first + i);
-    }
+    pmm_reserve(base, pages);
 }
 
 static void pmm_reserve_non_usable(void)
