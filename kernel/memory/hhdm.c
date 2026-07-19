@@ -10,6 +10,7 @@
 #include "../boot/limine.h"
 
 #include <stdint.h>
+#include <stddef.h>
 
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_hhdm_request hhdm_request =

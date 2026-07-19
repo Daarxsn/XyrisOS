@@ -17,6 +17,8 @@ void bitmap_set(bitmap_t* bitmap, size_t bit);
 
 void bitmap_clear(bitmap_t* bitmap, size_t bit);
 
+void bitmap_clear_all(bitmap_t* bitmap);
+
 bool bitmap_test(const bitmap_t* bitmap, size_t bit);
 
 size_t bitmap_find_free(const bitmap_t* bitmap);

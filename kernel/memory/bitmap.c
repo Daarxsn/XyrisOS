@@ -46,6 +46,19 @@ void bitmap_clear(bitmap_t* bitmap, size_t bit)
     bitmap->data[bit / 8] &= ~(1 << (bit % 8));
 }
 
+void bitmap_clear_all(bitmap_t* bitmap)
+{
+    if (bitmap == NULL || bitmap->data == NULL)
+        return;
+
+    size_t bytes = (bitmap->bits + 7) / 8;
+
+    for (size_t i = 0; i < bytes; i++)
+    {
+        bitmap->data[i] = 0;
+    }
+}
+
 bool bitmap_test(const bitmap_t* bitmap, size_t bit)
 {
     if (bitmap == NULL || bit >= bitmap->bits)
