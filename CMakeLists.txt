@@ -7,44 +7,45 @@
     set(CMAKE_C_STANDARD 23)
 
     add_executable(kernel.elf
-        kernel/core/kernel.c
+    kernel/core/kernel.c
 
-        kernel/graphics/framebuffer.c
-        kernel/graphics/graphics.c
-        kernel/graphics/font.c
+    # Graphics
+    kernel/graphics/framebuffer.c
+    kernel/graphics/graphics.c
+    kernel/graphics/font.c
 
-<<<<<<< HEAD
+    # Terminal/UI
     kernel/terminal/terminal.c
     kernel/ui/ui.c
     kernel/image/image.c
     kernel/image/logo.c
+
+    # Memory
     kernel/memory/pmm.c
     kernel/memory/heap.c
     kernel/memory/vmm.c
     kernel/memory/bitmap.c
-
-    kernel/memory/pmm.c
-    kernel/memory/heap.c
-    kernel/memory/vmm.c
     kernel/memory/hhdm.c
 
-kernel/execution/thread.c
-kernel/execution/execution.c
-kernel/execution/scheduler.c
-)
-=======
-        kernel/terminal/terminal.c
-        kernel/ui/ui.c
-        kernel/image/image.c
-        kernel/image/logo.c
-        kernel/memory/pmm.c
-    kernel/memory/heap.c
-    kernel/memory/vmm.c
-    #kernel/logger/logger.c
-    kernel/cpu/gdt.c
->>>>>>> 69898ed (feat(cpu): add Global Descriptor Table initialization)
+    # Execution
+    kernel/execution/thread.c
+    kernel/execution/execution.c
+    kernel/execution/scheduler.c
 
-    )
+    # Logger
+    kernel/logger/logger.c
+
+    # CPU
+    kernel/cpu/gdt.c
+    kernel/cpu/idt.c
+    kernel/cpu/isr.c
+    kernel/cpu/exceptions.c
+    kernel/cpu/interrupt.S
+
+    # Debug
+    kernel/debug/panic.c
+)
+
 
     target_include_directories(kernel.elf PRIVATE
         kernel

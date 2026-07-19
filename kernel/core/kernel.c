@@ -13,6 +13,7 @@
 #include "image/image.h"
 #include "image/logo.h"
 #include "cpu/gdt.h"
+#include "cpu/idt.h"
 /* -------------------------------------------------
    Limine Base Revision
 ------------------------------------------------- */
@@ -90,6 +91,9 @@ void kernel_main(void)
 
     ui_init();
     gdt_init();
+    idt_init();
+  /* Trigger vector 0 manually */
+__asm__ volatile ("int $0");
 
     /* -------------------------------------------------
        Background
