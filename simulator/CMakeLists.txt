@@ -19,8 +19,10 @@ add_executable(test_runner
     ../tests/test_runner.c
     ../tests/test_system.c
     ../tests/test_memory.c
+    ../tests/test_cpu.c
     src/system.c
     src/memory.c
+    src/cpu.c
 )
 
 target_include_directories(test_runner PRIVATE

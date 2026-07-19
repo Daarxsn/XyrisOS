@@ -2,6 +2,7 @@
 
 int test_system(void);
 int test_memory(void);
+int test_cpu(void);
 
 int main(void)
 {
@@ -13,6 +14,7 @@ int main(void)
 
     result |= test_system();
     result |= test_memory();
+    result |= test_cpu();
 
     printf("\n=====================================\n");
 
