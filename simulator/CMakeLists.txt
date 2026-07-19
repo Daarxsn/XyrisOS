@@ -18,7 +18,9 @@ add_executable(XyrisSim
 add_executable(test_runner
     ../tests/test_runner.c
     ../tests/test_system.c
+    ../tests/test_memory.c
     src/system.c
+    src/memory.c
 )
 
 target_include_directories(test_runner PRIVATE

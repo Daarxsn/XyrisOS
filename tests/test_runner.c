@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 int test_system(void);
+int test_memory(void);
 
 int main(void)
 {
@@ -11,6 +12,7 @@ int main(void)
     int result = 0;
 
     result |= test_system();
+    result |= test_memory();
 
     printf("\n=====================================\n");
 
