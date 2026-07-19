@@ -1,6 +1,8 @@
 void kernel_main(void)
 {
-    pmm_init(64 * 1024 * 1024);
+    memory_map_init();
+
+    pmm_init();
 
     heap_init();
 
@@ -12,7 +14,6 @@ void kernel_main(void)
 
     vmm_init();
 
-    while (1)
-    {
-    }
+    for (;;)
+        __asm__ volatile ("hlt");
 }
