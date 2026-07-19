@@ -7,106 +7,92 @@
 
 #include "pmm.h"
 #include "bitmap.h"
+#include "memory_map.h"
+#include "hhdm.h"
 
 #include <stdint.h>
 #include <stddef.h>
 
+#define PMM_MAX_USABLE_REGIONS 64
 #define INVALID_PAGE_INDEX ((size_t)-1)
 
 /* --------------------------------------------------
    Internal State
 -------------------------------------------------- */
 
-static bitmap_t pmm_bitmap;
+static bitmap_t frame_bitmap;
 
 /*
- * Temporary bitmap storage.
- * Supports approximately 1 GiB of RAM.
- * Phase 2 will replace this using the
- * bootloader memory map.
+ * Virtual address of the bitmap.
  */
-static uint8_t bitmap_storage[32768];
+static uint8_t *bitmap_buffer = NULL;
 
+/*
+ * Physical memory regions available
+ * for allocation.
+ */
+static const memory_region_t*
+    usable_regions[PMM_MAX_USABLE_REGIONS];
+
+static size_t usable_region_count = 0;
+
+/*
+ * PMM statistics.
+ */
 static pmm_stats_t stats;
 
-/* --------------------------------------------------
-   PMM Initialization
--------------------------------------------------- */
-
-void pmm_init(uint64_t memory_size)
+static void pmm_discover_regions(void)
 {
-    stats.total_memory = memory_size;
-    stats.used_memory = 0;
-    stats.free_memory = memory_size;
+    usable_region_count = 0;
 
-    stats.total_pages = memory_size / PAGE_SIZE;
-    stats.used_pages = 0;
-    stats.free_pages = stats.total_pages;
+    size_t count = memory_map_region_count();
 
-    bitmap_init(
-        &pmm_bitmap,
-        bitmap_storage,
-        stats.total_pages
-    );
+    for (size_t i = 0; i < count; i++)
+    {
+        const memory_region_t *region =
+            memory_map_region(i);
+
+        if (region->type != MEMORY_USABLE)
+            continue;
+
+        if (usable_region_count >= PMM_MAX_USABLE_REGIONS)
+            break;
+
+        usable_regions[usable_region_count++] = region;
+    }
 }
 
-/* --------------------------------------------------
-   Allocate One Physical Page
--------------------------------------------------- */
-
-void* pmm_alloc_page(void)
+static const memory_region_t*
+pmm_largest_region(void)
 {
-    size_t page = bitmap_find_free(&pmm_bitmap);
+    if (usable_region_count == 0)
+        return NULL;
 
-    if (page == INVALID_PAGE_INDEX)
-        return INVALID_PAGE;
+    const memory_region_t *largest =
+        usable_regions[0];
 
-    bitmap_set(&pmm_bitmap, page);
+    for (size_t i = 1;
+         i < usable_region_count;
+         i++)
+    {
+        if (usable_regions[i]->length >
+            largest->length)
+        {
+            largest = usable_regions[i];
+        }
+    }
 
-    stats.used_pages++;
-    stats.free_pages--;
-
-    stats.used_memory += PAGE_SIZE;
-    stats.free_memory -= PAGE_SIZE;
-
-    /*
-     * Phase 1:
-     * Physical memory is assumed to be identity-mapped.
-     */
-    return (void *)((uintptr_t)page * PAGE_SIZE);
+    return largest;
 }
 
-/* --------------------------------------------------
-   Free One Physical Page
--------------------------------------------------- */
-
-void pmm_free_page(void* address)
+static size_t pmm_bitmap_bytes(void)
 {
-    if (address == NULL)
-        return;
-
-    size_t page = ((uintptr_t)address) / PAGE_SIZE;
-
-    if (page >= stats.total_pages)
-        return;
-
-    if (!bitmap_test(&pmm_bitmap, page))
-        return;
-
-    bitmap_clear(&pmm_bitmap, page);
-
-    stats.used_pages--;
-    stats.free_pages++;
-
-    stats.used_memory -= PAGE_SIZE;
-    stats.free_memory += PAGE_SIZE;
+    return (stats.total_pages + 7) / 8;
 }
 
-/* --------------------------------------------------
-   Statistics
--------------------------------------------------- */
-
-pmm_stats_t pmm_get_stats(void)
+static size_t pmm_bitmap_pages(void)
 {
-    return stats;
+    return
+        (pmm_bitmap_bytes() + PAGE_SIZE - 1)
+        / PAGE_SIZE;
 }

@@ -18,13 +18,14 @@ add_executable(kernel.elf
     kernel/image/image.c
     kernel/image/logo.c
     kernel/memory/pmm.c
-kernel/memory/heap.c
-kernel/memory/vmm.c
-kernel/memory/bitmap.c
+    kernel/memory/heap.c
+    kernel/memory/vmm.c
+    kernel/memory/bitmap.c
 
-kernel/memory/pmm.c
-kernel/memory/heap.c
-kernel/memory/vmm.c
+    kernel/memory/pmm.c
+    kernel/memory/heap.c
+    kernel/memory/vmm.c
+    kernel/memory/hhdm.c
 
 kernel/execution/thread.c
 kernel/execution/execution.c

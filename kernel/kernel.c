@@ -2,6 +2,10 @@ void kernel_main(void)
 {
     memory_map_init();
 
+    memory_map_dump();
+
+    hhdm_init();
+
     pmm_init();
 
     heap_init();

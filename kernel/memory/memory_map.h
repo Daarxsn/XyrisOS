@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
+
 /*
  * Physical memory region types.
  *
@@ -74,5 +75,7 @@ memory_map_region(size_t index);
  */
 memory_map_info_t
 memory_map_info(void);
+
+void memory_map_dump(void);
 
 #endif
