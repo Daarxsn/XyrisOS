@@ -20,6 +20,28 @@ void simulator_init(void)
     printf("\nSystem Ready!\n");
 }
 
+void simulator_reset(void)
+{
+    printf("\nResetting XyrisSim...\n");
+
+    system_state.cpu_online = 0;
+    system_state.memory_online = 0;
+    system_state.display_online = 0;
+    system_state.kernel_loaded = 0;
+    system_state.ram_mb = 0;
+
+    cpu_ready = 0;
+    memory_ready = 0;
+
+    system_init();
+
+    cpu_init();
+    memory_init();
+    display_init();
+
+    printf("\nSystem Reset Complete!\n");
+}
+
 int simulator_execute(const char *command)
 {
     if (strcmp(command, "help") == 0)
@@ -29,6 +51,7 @@ int simulator_execute(const char *command)
         printf("help\n");
         printf("status\n");
         printf("boot\n");
+        printf("reset\n");
         printf("clear\n");
         printf("exit\n");
     }
@@ -61,6 +84,11 @@ int simulator_execute(const char *command)
         system_state.kernel_loaded = 1;
 
         printf("\nKernel Boot Successful!\n");
+    }
+
+    else if (strcmp(command, "reset") == 0)
+    {
+        simulator_reset();
     }
 
     else if (strcmp(command, "clear") == 0)
