@@ -21,9 +21,25 @@ int test_simulator_commands(void)
     printf("\nRunning Simulator Command Tests...\n");
 
     /*
-     * Initialize the simulator before testing commands.
+     * Initialize the simulator.
      */
     simulator_init();
+
+    /*
+     * Test help command.
+     */
+    ASSERT(
+        simulator_execute("help") == 0,
+        "Help command should execute successfully"
+    );
+
+    /*
+     * Test status command.
+     */
+    ASSERT(
+        simulator_execute("status") == 0,
+        "Status command should execute successfully"
+    );
 
     /*
      * Test boot command.
@@ -38,6 +54,19 @@ int test_simulator_commands(void)
     ASSERT(
         system_state.kernel_loaded == 1,
         "Boot command should load the kernel"
+    );
+
+    /*
+     * Test boot command when kernel is already loaded.
+     */
+    ASSERT(
+        simulator_execute("boot") == 0,
+        "Boot command should be safe when kernel is already loaded"
+    );
+
+    ASSERT(
+        system_state.kernel_loaded == 1,
+        "Kernel should remain loaded after repeated boot"
     );
 
     /*
@@ -74,11 +103,32 @@ int test_simulator_commands(void)
     );
 
     /*
+     * Test repeated reset.
+     */
+    ASSERT(
+        simulator_execute("reset") == 0,
+        "Repeated reset should execute safely"
+    );
+
+    ASSERT(
+        system_state.kernel_loaded == 0,
+        "Repeated reset should keep kernel unloaded"
+    );
+
+    /*
      * Test unknown command handling.
      */
     ASSERT(
         simulator_execute("invalid_command") == 0,
         "Unknown command should be handled safely"
+    );
+
+    /*
+     * Test empty command handling.
+     */
+    ASSERT(
+        simulator_execute("") == 0,
+        "Empty command should be handled safely"
     );
 
     /*
