@@ -3,7 +3,7 @@
 int test_system(void);
 int test_memory(void);
 int test_cpu(void);
-int test_simulator(void);
+int test_simulator_commands(void);
 
 int main(void)
 {
@@ -16,7 +16,7 @@ int main(void)
     result |= test_system();
     result |= test_memory();
     result |= test_cpu();
-    result |= test_simulator();
+    result |= test_simulator_commands();
 
     printf("\n=====================================\n");
 

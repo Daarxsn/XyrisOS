@@ -2,6 +2,8 @@
 
 #include "../simulator/include/simulator.h"
 #include "../simulator/include/system.h"
+#include "../simulator/include/cpu.h"
+#include "../simulator/include/memory.h"
 
 #define ASSERT(condition, message)        \
     do                                    \
@@ -14,38 +16,80 @@
         printf("[PASS] %s\n", message);   \
     } while (0)
 
-int test_simulator(void)
+int test_simulator_commands(void)
 {
-    printf("\nRunning Simulator Tests...\n");
+    printf("\nRunning Simulator Command Tests...\n");
 
+    /*
+     * Initialize the simulator before testing commands.
+     */
     simulator_init();
 
-    ASSERT(system_state.kernel_loaded == 0,
-           "Kernel should not be loaded after simulator initialization");
+    /*
+     * Test boot command.
+     */
+    system_state.kernel_loaded = 0;
 
-    simulator_execute("boot");
+    ASSERT(
+        simulator_execute("boot") == 0,
+        "Boot command should execute successfully"
+    );
 
-    ASSERT(system_state.kernel_loaded == 1,
-           "Kernel should be loaded after boot command");
+    ASSERT(
+        system_state.kernel_loaded == 1,
+        "Boot command should load the kernel"
+    );
 
-    simulator_execute("reset");
+    /*
+     * Test reset command.
+     */
+    ASSERT(
+        simulator_execute("reset") == 0,
+        "Reset command should execute successfully"
+    );
 
-    ASSERT(system_state.kernel_loaded == 0,
-           "Kernel should not be loaded after reset");
+    ASSERT(
+        system_state.kernel_loaded == 0,
+        "Reset should unload the kernel"
+    );
 
-    ASSERT(system_state.cpu_online == 1,
-           "CPU should be online after reset");
+    ASSERT(
+        system_state.cpu_online == 1,
+        "Reset should restore CPU state"
+    );
 
-    ASSERT(system_state.memory_online == 1,
-           "Memory should be online after reset");
+    ASSERT(
+        system_state.memory_online == 1,
+        "Reset should restore memory state"
+    );
 
-    ASSERT(system_state.display_online == 1,
-           "Display should be online after reset");
+    ASSERT(
+        system_state.display_online == 1,
+        "Reset should restore display state"
+    );
 
-    ASSERT(system_state.ram_mb == 64,
-           "RAM should be restored to 64 MB after reset");
+    ASSERT(
+        system_state.ram_mb == 64,
+        "Reset should restore RAM configuration"
+    );
 
-    printf("Simulator tests passed!\n");
+    /*
+     * Test unknown command handling.
+     */
+    ASSERT(
+        simulator_execute("invalid_command") == 0,
+        "Unknown command should be handled safely"
+    );
+
+    /*
+     * Test exit command.
+     */
+    ASSERT(
+        simulator_execute("exit") == 1,
+        "Exit command should return exit status"
+    );
+
+    printf("Simulator command tests passed!\n");
 
     return 0;
 }

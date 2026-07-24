@@ -6,7 +6,10 @@ set(CMAKE_C_STANDARD 23)
 
 include_directories(include)
 
-# Main XyrisOS Simulator
+# -------------------------------------------------
+# XyrisSim Executable
+# -------------------------------------------------
+
 add_executable(XyrisSim
     src/main.c
     src/simulator.c
@@ -16,7 +19,10 @@ add_executable(XyrisSim
     src/system.c
 )
 
-# XyrisOS Test Runner
+# -------------------------------------------------
+# Test Runner
+# -------------------------------------------------
+
 add_executable(test_runner
     ../tests/test_runner.c
     ../tests/test_system.c
@@ -33,6 +39,10 @@ add_executable(test_runner
 target_include_directories(test_runner PRIVATE
     include
 )
+
+# -------------------------------------------------
+# Testing
+# -------------------------------------------------
 
 enable_testing()
 
