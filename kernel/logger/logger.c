@@ -1,6 +1,6 @@
 #include "logger.h"
 
-#include "../terminal/terminal.h"
+#include "../debug/print.h"
 
 static const char* level_string(log_level_t level)
 {
@@ -21,9 +21,9 @@ void logger_init(void)
 
 void klog(log_level_t level, const char* message)
 {
-    terminal_write(level_string(level));
-    terminal_write(message);
-    terminal_write("\n");
+    debug_print(level_string(level));
+debug_print(message);
+debug_print("\n");
 }
 
 void klog_debug(const char* msg)

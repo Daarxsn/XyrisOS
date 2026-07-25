@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-
+#include "debug/print.h"
 #include "boot/limine.h"
 
 #include "graphics/framebuffer.h"
@@ -92,8 +92,22 @@ void kernel_main(void)
     ui_init();
     gdt_init();
     idt_init();
+
+    framebuffer_clear(0x1E1E2E);
+
+debug_print_init();
+
+debug_print_line("================================");
+debug_print_line("          XYRISOS");
+debug_print_line("================================");
+debug_print_line("");
+debug_print_line("Graphics Online");
+debug_print_line("Debug Printer Online");
+
+hcf();
+
   /* Trigger vector 0 manually */
-__asm__ volatile ("int $0");
+/*__asm__ volatile ("int $0");*/
 
     /* -------------------------------------------------
        Background
@@ -117,7 +131,7 @@ draw_image_scaled(
        Title
     ------------------------------------------------- */
 
-    draw_string(
+   font_draw_string(
         center_x(7 * 8),
         570,
         "XyrisOS",
@@ -128,7 +142,7 @@ draw_image_scaled(
        Subtitle
     ------------------------------------------------- */
 
-    draw_string(
+    font_draw_string(
         center_x(22 * 8),
         595,
         "The Next Generation OS",
@@ -139,7 +153,7 @@ draw_image_scaled(
        Status
     ------------------------------------------------- */
 
-    draw_string(
+    font_draw_string(
         center_x(19 * 8),
         620,
         "Booting Kernel...",

@@ -3,14 +3,24 @@
 
 #include <stdint.h>
 
-void draw_char(
+#define FONT_WIDTH  8
+#define FONT_HEIGHT 8
+
+/*
+ * Draw a single character.
+ */
+void font_draw_char(
     int x,
     int y,
     char c,
     uint32_t color
 );
 
-void draw_string(
+/*
+ * Draw a string.
+ * Supports '\n' for new lines.
+ */
+void font_draw_string(
     int x,
     int y,
     const char *text,

@@ -44,7 +44,10 @@
 
     # Debug
     kernel/debug/panic.c
+    kernel/debug/print.c
+    kernel/debug/hex.c
 )
+
 
 
     target_include_directories(kernel.elf PRIVATE

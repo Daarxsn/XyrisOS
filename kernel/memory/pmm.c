@@ -133,8 +133,7 @@ static void pmm_initialize_bitmap(const memory_region_t *region)
     /*
      * Reserve bitmap pages.
      */
-    size_t first =
-    pmm_page_index(bitmap_phys);
+   
 
     pmm_reserve(bitmap_phys, bitmap_pages);
 }
