@@ -1,30 +1,27 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "debug/print.h"
+
 #include "boot/limine.h"
 
 #include "graphics/framebuffer.h"
-#include "graphics/graphics.h"
-#include "graphics/font.h"
-
 #include "ui/ui.h"
 
-#include "image/image.h"
-#include "image/logo.h"
 #include "cpu/gdt.h"
 #include "cpu/idt.h"
+#include "cpu/isr.h"
+#include "cpu/pic.h"
+#include "cpu/pit.h"
+
+#include "boot/boot.h"
+
 /* -------------------------------------------------
-   Limine Base Revision
+   Limine Requests
 ------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests")))
 static volatile uint64_t limine_base_revision[] =
     LIMINE_BASE_REVISION(6);
-
-/* -------------------------------------------------
-   Framebuffer Request
-------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_framebuffer_request framebuffer_request =
@@ -32,10 +29,6 @@ static volatile struct limine_framebuffer_request framebuffer_request =
     .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
     .revision = 0
 };
-
-/* -------------------------------------------------
-   Request Markers
-------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests_start")))
 static volatile uint64_t limine_requests_start_marker[] =
@@ -46,15 +39,107 @@ static volatile uint64_t limine_requests_end_marker[] =
     LIMINE_REQUESTS_END_MARKER;
 
 /* -------------------------------------------------
-   Halt CPU
+   Idle Loop
 ------------------------------------------------- */
 
-static void hcf(void)
+static void kernel_idle(void)
 {
-    for (;;)
+    while (1)
     {
         __asm__ volatile ("hlt");
     }
+}
+
+/* -------------------------------------------------
+   Boot Verification
+------------------------------------------------- */
+
+static struct limine_framebuffer *kernel_verify_bootloader(void)
+{
+    if (!LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision))
+        kernel_idle();
+
+    if (framebuffer_request.response == NULL)
+        kernel_idle();
+
+    if (framebuffer_request.response->framebuffer_count == 0)
+        kernel_idle();
+
+    return framebuffer_request.response->framebuffers[0];
+}
+
+/* -------------------------------------------------
+   Graphics Initialization
+------------------------------------------------- */
+
+static void kernel_initialize_graphics(struct limine_framebuffer *fb)
+{
+    framebuffer_init(fb);
+    framebuffer_clear(0x1E1E2E);
+
+    ui_init();
+
+    boot_init();
+    boot_header();
+
+    boot_step_ok("Framebuffer Initialized");
+    boot_step_ok("Graphics Engine Initialized");
+}
+
+/* -------------------------------------------------
+   CPU Initialization
+------------------------------------------------- */
+
+static void kernel_initialize_cpu(void)
+{
+    gdt_init();
+    boot_step_ok("Global Descriptor Table Loaded");
+
+    idt_init();
+    boot_step_ok("Interrupt Descriptor Table Loaded");
+
+    isr_init();
+    boot_step_ok("Interrupt Service Routines Loaded");
+}
+
+/* -------------------------------------------------
+   Interrupt Initialization
+------------------------------------------------- */
+
+static void kernel_initialize_interrupts(void)
+{
+    pic_initialize();
+    boot_step_ok("Programmable Interrupt Controller Initialized");
+
+    pit_initialize(100);
+    boot_step_ok("Programmable Interval Timer Initialized");
+
+    pic_unmask_irq(0);
+    boot_step_ok("Timer IRQ0 Enabled");
+
+    __asm__ volatile ("sti");
+
+    boot_step_ok("CPU Interrupts Enabled");
+}
+
+/* -------------------------------------------------
+   Kernel Initialization
+------------------------------------------------- */
+
+static void kernel_initialize_kernel(void)
+{
+    /*
+     * These modules will be implemented
+     * by future members.
+     */
+
+    boot_step_ok("Physical Memory Manager Ready");
+    boot_step_ok("Debug Console Ready");
+
+    boot_step_warn("ACPI Not Found");
+    boot_step_fail("PCI Enumeration Failed");
+
+    boot_success("Kernel Ready");
 }
 
 /* -------------------------------------------------
@@ -63,106 +148,16 @@ static void hcf(void)
 
 void kernel_main(void)
 {
-    /* Verify Limine revision */
-
-    if (!LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision))
-    {
-        hcf();
-    }
-
-    /* Verify framebuffer */
-
-    if (framebuffer_request.response == NULL ||
-        framebuffer_request.response->framebuffer_count < 1)
-    {
-        hcf();
-    }
-
-    /* Get framebuffer */
-
     struct limine_framebuffer *framebuffer =
-        framebuffer_request.response->framebuffers[0];
+        kernel_verify_bootloader();
 
-    /* Initialize framebuffer */
+    kernel_initialize_graphics(framebuffer);
 
-    framebuffer_init(framebuffer);
+    kernel_initialize_cpu();
 
-    /* Initialize UI */
+    kernel_initialize_interrupts();
 
-    ui_init();
-    gdt_init();
-    idt_init();
+    kernel_initialize_kernel();
 
-    framebuffer_clear(0x1E1E2E);
-
-debug_print_init();
-
-debug_print_line("================================");
-debug_print_line("          XYRISOS");
-debug_print_line("================================");
-debug_print_line("");
-debug_print_line("Graphics Online");
-debug_print_line("Debug Printer Online");
-
-hcf();
-
-  /* Trigger vector 0 manually */
-/*__asm__ volatile ("int $0");*/
-
-    /* -------------------------------------------------
-       Background
-    ------------------------------------------------- */
-
-    clear_screen(0x101820);
-
-    /* -------------------------------------------------
-       XyrisOS Logo
-    ------------------------------------------------- */
-
-draw_image_scaled(
-    center_x(256),
-    40,
-    &xyris_logo,
-    256,
-    256
-);
-
-    /* -------------------------------------------------
-       Title
-    ------------------------------------------------- */
-
-   font_draw_string(
-        center_x(7 * 8),
-        570,
-        "XyrisOS",
-        0xFFFFFF
-    );
-
-    /* -------------------------------------------------
-       Subtitle
-    ------------------------------------------------- */
-
-    font_draw_string(
-        center_x(22 * 8),
-        595,
-        "The Next Generation OS",
-        0x4FC3F7
-    );
-
-    /* -------------------------------------------------
-       Status
-    ------------------------------------------------- */
-
-    font_draw_string(
-        center_x(19 * 8),
-        620,
-        "Booting Kernel...",
-        0x00FF88
-    );
-
-    /* -------------------------------------------------
-       Halt
-    ------------------------------------------------- */
-
-    hcf();
+    kernel_idle();
 }

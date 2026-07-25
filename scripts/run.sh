@@ -2,6 +2,8 @@
 
 set -e
 
+./scripts/iso.sh
+
 echo "====================================="
 echo "        Starting XyrisOS"
 echo "====================================="

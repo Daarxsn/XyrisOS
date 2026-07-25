@@ -7,4 +7,7 @@
 
 void uint64_to_hex(uint64_t value, char *buffer);
 
+/* Debug helper */
+void debug_print_hex64(uint64_t value);
+
 #endif

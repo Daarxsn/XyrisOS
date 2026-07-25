@@ -41,11 +41,20 @@
     kernel/cpu/isr.c
     kernel/cpu/exceptions.c
     kernel/cpu/interrupt.S
+    kernel/cpu/io.c
+    kernel/cpu/pic.c
+    kernel/cpu/irq.c
+    kernel/cpu/pit.c
+    kernel/cpu/cpu.c
 
     # Debug
     kernel/debug/panic.c
     kernel/debug/print.c
     kernel/debug/hex.c
+
+    #Boot
+    kernel/boot/boot.c
+    
 )
 
 

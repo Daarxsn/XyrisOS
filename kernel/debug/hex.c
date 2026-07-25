@@ -1,4 +1,5 @@
 #include "hex.h"
+#include "print.h"
 
 static const char hex_digits[] = "0123456789ABCDEF";
 
@@ -16,4 +17,13 @@ void uint64_to_hex(uint64_t value, char *buffer)
     }
 
     buffer[18] = '\0';
+}
+
+void debug_print_hex64(uint64_t value)
+{
+    char buffer[HEX64_STRING_SIZE];
+
+    uint64_to_hex(value, buffer);
+
+    debug_print_line(buffer);
 }

@@ -43,6 +43,5 @@ void exception_dispatch(registers_t *regs)
 
     (void)name;
 
-    for (;;)
         kernel_panic(regs, name);
 }

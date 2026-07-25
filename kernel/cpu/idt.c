@@ -17,6 +17,14 @@ static void (*const isr_table[32])(void) =
     isr28, isr29, isr30, isr31
 };
 
+static void (*const irq_table[16])(void) =
+{
+    irq0, irq1, irq2, irq3,
+    irq4, irq5, irq6, irq7,
+    irq8, irq9, irq10, irq11,
+    irq12, irq13, irq14, irq15
+};
+
 static void idt_set_gate(
     uint8_t vector,
     uint64_t handler,
@@ -59,6 +67,18 @@ void idt_init(void)
             0          /* IST */
         );
     }
+
+    /* Install Hardware IRQs (Vectors 32–47) */
+for (int i = 0; i < 16; i++)
+{
+    idt_set_gate(
+        (uint8_t)(32 + i),
+        (uint64_t)irq_table[i],
+        0x08,
+        0x8E,
+        0
+    );
+}
 
     idt_load(&idt_ptr);
 }

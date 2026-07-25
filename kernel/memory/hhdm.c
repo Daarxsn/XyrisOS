@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "../cpu/cpu.h"
 
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_hhdm_request hhdm_request =
@@ -26,8 +27,7 @@ void hhdm_init(void)
 {
     if (hhdm_request.response == NULL)
     {
-        for (;;)
-            __asm__ volatile("hlt");
+       cpu_halt_forever();
     }
 
     hhdm_base = hhdm_request.response->offset;
