@@ -12,6 +12,7 @@
 
 #include "image/image.h"
 #include "image/logo.h"
+#include "foundation/capability.h"
 
 /* -------------------------------------------------
    Limine Base Revision
@@ -90,6 +91,7 @@ void kernel_main(void)
 
     ui_init();
     xkobject_init();
+    xk_capability_init();
 
     /* -------------------------------------------------
        Background

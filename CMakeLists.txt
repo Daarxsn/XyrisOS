@@ -7,10 +7,17 @@ enable_language(ASM)
 set(CMAKE_C_STANDARD 23)
 
 add_executable(kernel.elf
+
+    # Core
     kernel/core/kernel.c
 
     # Foundation
-    kernel/foundation/ukom.c
+    kernel/foundation2/ukom.c
+    kernel/foundation2/capability.c
+    kernel/foundation2/resource.c
+    kernel/foundation2/event.c
+    kernel/foundation2/time.c
+    kernel/foundation2/config.c
 
     # Graphics
     kernel/graphics/framebuffer.c
