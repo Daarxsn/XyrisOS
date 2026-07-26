@@ -4,6 +4,9 @@
 
 #include "boot/limine.h"
 
+#include "foundation/ukom.h"
+#include "foundation/capability.h"
+
 #include "graphics/framebuffer.h"
 #include "ui/ui.h"
 
@@ -14,6 +17,9 @@
 #include "cpu/pit.h"
 
 #include "boot/boot.h"
+
+#include "image/image.h"
+#include "image/logo.h"
 
 /* -------------------------------------------------
    Limine Requests
@@ -128,6 +134,14 @@ static void kernel_initialize_interrupts(void)
 
 static void kernel_initialize_kernel(void)
 {
+    /* Foundation */
+
+    xkobject_init();
+    boot_step_ok("UKOM Initialized");
+
+    xk_capability_init();
+    boot_step_ok("Capability Manager Initialized");
+
     /*
      * These modules will be implemented
      * by future members.
