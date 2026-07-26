@@ -5,8 +5,14 @@ set -e
 echo "=========================================="
 echo "      XyrisOS Simulator Test Suite"
 echo "=========================================="
-
 echo ""
+
+if [ ! -d "simulator" ]; then
+    echo "Error: simulator directory not found."
+    echo "Please run this script from the XyrisOS repository root."
+    exit 1
+fi
+
 echo "[1/3] Configuring simulator..."
 
 cmake -S simulator \
