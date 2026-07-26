@@ -13,6 +13,7 @@ include_directories(include)
 add_executable(XyrisSim
     src/main.c
     src/simulator.c
+    src/ukom_sim.c
     src/cpu.c
     src/memory.c
     src/display.c
@@ -48,11 +49,29 @@ add_executable(test_simulator
     ../tests/test_simulator_main.c
     ../tests/test_simulator.c
     src/simulator.c
+    src/ukom_sim.c
     src/system.c
     src/cpu.c
     src/memory.c
     src/display.c
 )
+
+# -------------------------------------------------
+# Kernel UKOM Tests
+# -------------------------------------------------
+
+add_executable(test_ukom
+    ../tests/test_ukom.c
+    ../kernel/foundation2/ukom.c
+)
+
+target_include_directories(test_ukom PRIVATE
+    ../kernel/include
+)
+
+# -------------------------------------------------
+# Test Include Directories
+# -------------------------------------------------
 
 target_include_directories(test_system PRIVATE include)
 target_include_directories(test_memory PRIVATE include)
@@ -83,4 +102,9 @@ add_test(
 add_test(
     NAME XyrisOS_Simulator_Tests
     COMMAND test_simulator
+)
+
+add_test(
+    NAME XyrisOS_UKOM_Tests
+    COMMAND test_ukom
 )

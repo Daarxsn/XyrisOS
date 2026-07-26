@@ -4,6 +4,7 @@
 #include "../simulator/include/system.h"
 #include "../simulator/include/cpu.h"
 #include "../simulator/include/memory.h"
+#include "../simulator/include/ukom_sim.h"
 
 #define ASSERT(condition, message)        \
     do                                    \
@@ -18,6 +19,8 @@
 
 int test_simulator_commands(void)
 {
+    UKOMSimObject *object;
+
     printf("\nRunning Simulator Command Tests...\n");
 
     /*
@@ -70,6 +73,102 @@ int test_simulator_commands(void)
     );
 
     /*
+     * Test UKOM object creation command.
+     */
+    simulator_execute("reset");
+
+    ASSERT(
+        simulator_execute("ukom create process") == 0,
+        "UKOM create command should execute successfully"
+    );
+
+    object = ukom_sim_find(1);
+
+    ASSERT(
+        object != NULL,
+        "UKOM create command should create an object"
+    );
+
+    ASSERT(
+        object->type == UKOM_SIM_OBJECT_PROCESS,
+        "UKOM create command should create the requested object type"
+    );
+
+    ASSERT(
+        object->ref_count == 1,
+        "UKOM object should start with one reference"
+    );
+
+    /*
+     * Test UKOM find command.
+     */
+    ASSERT(
+        simulator_execute("ukom find 1") == 0,
+        "UKOM find command should execute successfully"
+    );
+
+    ASSERT(
+        ukom_sim_exists(1),
+        "UKOM find command should locate the created object"
+    );
+
+    /*
+     * Test UKOM retain command.
+     */
+    ASSERT(
+        simulator_execute("ukom retain 1") == 0,
+        "UKOM retain command should execute successfully"
+    );
+
+    object = ukom_sim_find(1);
+
+    ASSERT(
+        object->ref_count == 2,
+        "UKOM retain command should increase reference count"
+    );
+
+    /*
+     * Test UKOM release command.
+     */
+    ASSERT(
+        simulator_execute("ukom release 1") == 0,
+        "UKOM release command should execute successfully"
+    );
+
+    object = ukom_sim_find(1);
+
+    ASSERT(
+        object->ref_count == 1,
+        "UKOM release command should decrease reference count"
+    );
+
+    /*
+     * Test UKOM destroy command.
+     */
+    ASSERT(
+        simulator_execute("ukom destroy 1") == 0,
+        "UKOM destroy command should execute successfully"
+    );
+
+    ASSERT(
+        !ukom_sim_exists(1),
+        "UKOM destroy command should remove the object"
+    );
+
+    /*
+     * Test UKOM reset integration.
+     */
+    ASSERT(
+        simulator_execute("ukom create process") == 0,
+        "UKOM object should be created before reset"
+    );
+
+    ASSERT(
+        ukom_sim_count() == 1,
+        "UKOM registry should contain one object before reset"
+    );
+
+    /*
      * Test reset command.
      */
     ASSERT(
@@ -102,6 +201,16 @@ int test_simulator_commands(void)
         "Reset should restore RAM configuration"
     );
 
+    ASSERT(
+        ukom_sim_count() == 0,
+        "Reset should clear all UKOM objects"
+    );
+
+    ASSERT(
+        !ukom_sim_exists(1),
+        "Reset should remove UKOM objects from the registry"
+    );
+
     /*
      * Test repeated reset.
      */
@@ -113,6 +222,11 @@ int test_simulator_commands(void)
     ASSERT(
         system_state.kernel_loaded == 0,
         "Repeated reset should keep kernel unloaded"
+    );
+
+    ASSERT(
+        ukom_sim_count() == 0,
+        "Repeated reset should keep the UKOM registry empty"
     );
 
     /*

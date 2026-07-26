@@ -5,9 +5,11 @@ XyrisSim is the reference simulator for XyrisOS. It provides a lightweight envir
 The simulator is designed to support:
 
 - System initialization
-- Memory subsystem testing
 - CPU subsystem testing
+- Memory subsystem testing
+- Display subsystem testing
 - Basic command execution
+- Universal Kernel Object Manager (UKOM) simulation
 - Automated testing through CTest
 - Development and continuous integration workflows
 
@@ -19,6 +21,6 @@ The simulator is designed to support:
 simulator/
 ├── include/        # Public header files
 ├── src/            # Simulator implementation
-├── tests/          # Unit and integration tests
+├── tests/          # Simulator and component tests
 ├── docs/           # Simulator documentation
 └── CMakeLists.txt  # Simulator build configuration
