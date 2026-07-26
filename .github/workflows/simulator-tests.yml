@@ -1,4 +1,4 @@
-name: XyrisOS Simulator Tests
+name: XyrisOS CI
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install simulator dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build gcc
@@ -26,3 +26,20 @@ jobs:
       - name: Run simulator test suite
         run: |
           ./scripts/simulator-test.sh
+
+  kernel-build:
+    name: Build XyrisOS Kernel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install kernel build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc
+
+      - name: Build kernel
+        run: |
+          ./scripts/build.sh
