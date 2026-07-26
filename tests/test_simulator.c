@@ -132,6 +132,14 @@ int test_simulator_commands(void)
     );
 
     /*
+     * Test NULL command handling.
+     */
+    ASSERT(
+        simulator_execute(NULL) == 0,
+        "NULL command should be handled safely"
+    );
+
+    /*
      * Test exit command.
      */
     ASSERT(

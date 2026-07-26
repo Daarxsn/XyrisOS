@@ -44,6 +44,15 @@ void simulator_reset(void)
 
 int simulator_execute(const char *command)
 {
+    /*
+     * Handle NULL commands safely.
+     */
+    if (command == NULL)
+    {
+        printf("Invalid command.\n");
+        return 0;
+    }
+
     if (strcmp(command, "help") == 0)
     {
         printf("\nAvailable Commands\n");
