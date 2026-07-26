@@ -9,6 +9,8 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
 jobs:
   simulator-tests:
     name: Build and Test XyrisSim
@@ -27,6 +29,10 @@ jobs:
         run: |
           ./scripts/simulator-test.sh
 
+      - name: Check for whitespace errors
+        run: |
+          git diff --check
+
   kernel-build:
     name: Build XyrisOS Kernel
     runs-on: ubuntu-latest
@@ -43,3 +49,7 @@ jobs:
       - name: Build kernel
         run: |
           ./scripts/build.sh
+
+      - name: Check for whitespace errors
+        run: |
+          git diff --check
