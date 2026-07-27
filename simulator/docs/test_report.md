@@ -4,7 +4,9 @@
 
 XyrisSim is the reference simulator for XyrisOS.
 
-This test report documents the automated tests used to verify simulator initialization, system components, command execution, kernel boot behavior, reset behavior, and edge-case handling.
+This document records the automated verification of the simulator, its core subsystems, the simulator command interface, and the Universal Kernel Object Manager (UKOM) integration.
+
+The test suite is executed using CMake, Ninja, and CTest.
 
 ---
 

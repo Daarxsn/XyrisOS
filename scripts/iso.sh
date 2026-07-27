@@ -2,27 +2,62 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+cd "$PROJECT_ROOT"
+
 echo "========================================="
 echo "      Creating XyrisOS Bootable ISO"
 echo "========================================="
 
-rm -rf iso_root
-mkdir -p iso_root/boot/limine
-mkdir -p iso_root/EFI/BOOT
+if ! command -v xorriso >/dev/null 2>&1; then
+    echo "Error: xorriso is not installed."
+    exit 1
+fi
 
-echo "[1/5] Copying kernel..."
-cp build/kernel.elf iso_root/boot/kernel.elf
+if [ ! -f "$PROJECT_ROOT/build/kernel.elf" ]; then
+    echo "Error: Kernel build not found."
+    echo "Run ./scripts/build.sh first."
+    exit 1
+fi
 
-echo "[2/5] Copying Limine configuration..."
-cp boot/limine/limine.conf iso_root/boot/limine/
+if [ ! -f "$PROJECT_ROOT/boot/limine/limine.conf" ]; then
+    echo "Error: Limine configuration not found."
+    exit 1
+fi
 
-echo "[3/5] Copying Limine binaries..."
-cp limine-binary/limine-bios.sys iso_root/boot/limine/
-cp limine-binary/limine-bios-cd.bin iso_root/boot/limine/
-cp limine-binary/limine-uefi-cd.bin iso_root/boot/limine/
+echo "[1/5] Preparing ISO directory..."
 
-cp limine-binary/BOOTX64.EFI iso_root/EFI/BOOT/
-cp limine-binary/BOOTIA32.EFI iso_root/EFI/BOOT/
+rm -rf "$PROJECT_ROOT/iso_root"
+
+mkdir -p "$PROJECT_ROOT/iso_root/boot/limine"
+mkdir -p "$PROJECT_ROOT/iso_root/EFI/BOOT"
+
+echo "[2/5] Copying kernel..."
+
+cp "$PROJECT_ROOT/build/kernel.elf" \
+   "$PROJECT_ROOT/iso_root/boot/kernel.elf"
+
+echo "[3/5] Copying Limine configuration and binaries..."
+
+cp "$PROJECT_ROOT/boot/limine/limine.conf" \
+   "$PROJECT_ROOT/iso_root/boot/limine/"
+
+cp "$PROJECT_ROOT/limine-binary/limine-bios.sys" \
+   "$PROJECT_ROOT/iso_root/boot/limine/"
+
+cp "$PROJECT_ROOT/limine-binary/limine-bios-cd.bin" \
+   "$PROJECT_ROOT/iso_root/boot/limine/"
+
+cp "$PROJECT_ROOT/limine-binary/limine-uefi-cd.bin" \
+   "$PROJECT_ROOT/iso_root/boot/limine/"
+
+cp "$PROJECT_ROOT/limine-binary/BOOTX64.EFI" \
+   "$PROJECT_ROOT/iso_root/EFI/BOOT/"
+
+cp "$PROJECT_ROOT/limine-binary/BOOTIA32.EFI" \
+   "$PROJECT_ROOT/iso_root/EFI/BOOT/"
 
 echo "[4/5] Creating ISO..."
 
@@ -40,12 +75,13 @@ xorriso -as mkisofs \
     -efi-boot-part \
     --efi-boot-image \
     --protective-msdos-label \
-    iso_root \
-    -o XyrisOS.iso
+    "$PROJECT_ROOT/iso_root" \
+    -o "$PROJECT_ROOT/XyrisOS.iso"
 
 echo "[5/5] Installing Limine..."
 
-./limine-binary/limine bios-install XyrisOS.iso
+"$PROJECT_ROOT/limine-binary/limine" \
+    bios-install "$PROJECT_ROOT/XyrisOS.iso"
 
 echo ""
 echo "========================================="

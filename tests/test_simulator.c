@@ -254,6 +254,93 @@ int test_simulator_commands(void)
     );
 
     /*
+     * Test UKOM command without a subcommand.
+     */
+    ASSERT(
+        simulator_execute("ukom") == 0,
+        "UKOM command without a subcommand should be handled safely"
+    );
+
+    /*
+     * Test UKOM create command without an object type.
+     */
+    ASSERT(
+        simulator_execute("ukom create") == 0,
+        "UKOM create without an object type should be handled safely"
+    );
+
+    /*
+     * Test invalid UKOM object type.
+     */
+    ASSERT(
+        simulator_execute("ukom create invalid_type") == 0,
+        "Invalid UKOM object type should be handled safely"
+    );
+
+    /*
+     * Test finding a nonexistent UKOM object.
+     */
+    ASSERT(
+        simulator_execute("ukom find 999") == 0,
+        "Finding a nonexistent UKOM object should be handled safely"
+    );
+
+    /*
+     * Test retaining a nonexistent UKOM object.
+     */
+    ASSERT(
+        simulator_execute("ukom retain 999") == 0,
+        "Retaining a nonexistent UKOM object should be handled safely"
+    );
+
+    /*
+     * Test releasing a nonexistent UKOM object.
+     */
+    ASSERT(
+        simulator_execute("ukom release 999") == 0,
+        "Releasing a nonexistent UKOM object should be handled safely"
+    );
+
+    /*
+     * Test destroying a nonexistent UKOM object.
+     */
+    ASSERT(
+        simulator_execute("ukom destroy 999") == 0,
+        "Destroying a nonexistent UKOM object should be handled safely"
+    );
+
+    /*
+     * Test creating multiple UKOM objects.
+     */
+    ASSERT(
+        simulator_execute("ukom create thread") == 0,
+        "UKOM should create a thread object"
+    );
+
+    ASSERT(
+        simulator_execute("ukom create resource") == 0,
+        "UKOM should create a resource object"
+    );
+
+    ASSERT(
+        ukom_sim_count() == 2,
+        "UKOM registry should track multiple objects"
+    );
+
+    /*
+     * Clean up objects created by edge-case tests.
+     */
+    ASSERT(
+        simulator_execute("reset") == 0,
+        "Reset should clean up edge-case test objects"
+    );
+
+    ASSERT(
+        ukom_sim_count() == 0,
+        "UKOM reset should leave the registry empty"
+    );
+
+    /*
      * Test exit command.
      */
     ASSERT(
