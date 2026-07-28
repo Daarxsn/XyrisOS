@@ -16,6 +16,9 @@ add_executable(kernel.elf
     kernel/foundation2/capability.c
     kernel/foundation2/resource.c
     kernel/foundation2/event.c
+    kernel/foundation2/ukom.c
+kernel/foundation2/capability.c
+kernel/foundation2/resource.c
     kernel/foundation2/time.c
     kernel/foundation2/config.c
 

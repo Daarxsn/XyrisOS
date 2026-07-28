@@ -6,6 +6,7 @@
 
 #include "foundation/ukom.h"
 #include "foundation/capability.h"
+#include "foundation/event.h"
 
 #include "graphics/framebuffer.h"
 #include "ui/ui.h"
@@ -106,6 +107,8 @@ static void kernel_initialize_cpu(void)
 
     isr_init();
     boot_step_ok("Interrupt Service Routines Loaded");
+
+    
 }
 
 /* -------------------------------------------------
@@ -155,6 +158,8 @@ static void kernel_initialize_kernel(void)
 
     boot_step_warn("ACPI Not Found");
     boot_step_fail("PCI Enumeration Failed");
+    xk_event_init();
+boot_step_ok("Event Manager Initialized");
 
     boot_success("Kernel Ready");
 }
