@@ -7,7 +7,8 @@
 #include "foundation/ukom.h"
 #include "foundation/capability.h"
 #include "foundation/event.h"
-
+#include "foundation/time.h"
+#include "foundation/config.h"
 #include "graphics/framebuffer.h"
 #include "ui/ui.h"
 
@@ -135,7 +136,9 @@ static void kernel_initialize_interrupts(void)
    Kernel Initialization
 ------------------------------------------------- */
 
-static void kernel_initialize_kernel(void)
+
+
+   static void kernel_initialize_kernel(void)
 {
     /* Foundation */
 
@@ -147,6 +150,15 @@ static void kernel_initialize_kernel(void)
 
     xk_resource_init();
     boot_step_ok("Resource Manager Initialized");
+
+    xk_event_init();
+    boot_step_ok("Event Manager Initialized");
+
+    xk_time_init();
+    boot_step_ok("Time Manager Initialized");
+
+    xk_config_init();
+    boot_step_ok("Configuration Manager Initialized");
 
     /*
      * These modules will be implemented

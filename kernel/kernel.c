@@ -1,3 +1,4 @@
+
 void kernel_main(void)
 {
     memory_map_init();
@@ -17,6 +18,8 @@ void kernel_main(void)
     scheduler_init();
 
     vmm_init();
+
+  
 
     for (;;)
         __asm__ volatile ("hlt");
