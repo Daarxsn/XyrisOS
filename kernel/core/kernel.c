@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-
+#include "foundation/resource.h"
 #include "boot/limine.h"
 
 #include "foundation/ukom.h"
@@ -141,6 +141,9 @@ static void kernel_initialize_kernel(void)
 
     xk_capability_init();
     boot_step_ok("Capability Manager Initialized");
+
+    xk_resource_init();
+    boot_step_ok("Resource Manager Initialized");
 
     /*
      * These modules will be implemented
