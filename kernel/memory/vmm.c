@@ -14,7 +14,6 @@
 #define ENTRIES_PER_TABLE 512
 
 #define PAGE_SHIFT      12
-#define PAGE_SIZE  (1ULL << PAGE_SHIFT)
 #define PAGE_MASK       0xFFFFFFFFFFFFF000ULL
 
 #define PML4_INDEX(x) (((x) >> 39) & 0x1FF)
@@ -22,9 +21,9 @@
 #define PD_INDEX(x)   (((x) >> 21) & 0x1FF)
 #define PT_INDEX(x)   (((x) >> 12) & 0x1FF)
 
-#define PAGE_PRESENT   (1ULL << 0)
-#define PAGE_WRITABLE  (1ULL << 1)
-#define PAGE_USER      (1ULL << 2)
+#define VMM_PRESENT   (1ULL << 0)
+#define VMM_WRITABLE  (1ULL << 1)
+#define VMM_USER      (1ULL << 2)
 
 /* --------------------------------------------------
    Internal Address Space
@@ -45,6 +44,26 @@ static struct address_space kernel_space;
    Helpers
 -------------------------------------------------- */
 
+static inline uintptr_t read_cr3(void)
+{
+    uintptr_t value;
+
+    __asm__ volatile(
+        "mov %%cr3, %0"
+        : "=r"(value));
+
+    return value;
+}
+
+static inline void write_cr3(uintptr_t value)
+{
+    __asm__ volatile(
+        "mov %0, %%cr3"
+        :
+        : "r"(value)
+        : "memory");
+}
+
 static inline uint64_t* current_pml4(void)
 {
     uintptr_t cr3 = read_cr3();
@@ -59,7 +78,22 @@ static inline uint64_t* current_pml4(void)
 
 static uint64_t* page_table_from_entry(uint64_t entry)
 {
-    return (uint64_t*)phys_to_virt(entry & PAGE_MASK);
+    return (uint64_t*)phys_to_virt(entry_address(entry));
+}
+
+static inline bool entry_present(uint64_t entry)
+{
+    return (entry & VMM_PRESENT) != 0;
+}
+
+static inline bool entry_huge(uint64_t entry)
+{
+    return (entry & VMM_HUGE) != 0;
+}
+
+static inline phys_addr_t entry_address(uint64_t entry)
+{
+    return entry & PAGE_MASK;
 }
 
 static uint64_t* allocate_table(void)
@@ -87,7 +121,7 @@ static uint64_t* walk_page_tables(
 
     uint64_t* pdpt;
 
-    if (!(pml4[PML4_INDEX(virtual_addr)] & PAGE_PRESENT))
+    if (!(pml4[PML4_INDEX(virtual_addr)] & VMM_PRESENT))
     {
         if (!create)
             return NULL;
@@ -99,8 +133,8 @@ static uint64_t* walk_page_tables(
 
         pml4[PML4_INDEX(virtual_addr)] =
             virt_to_phys(pdpt)
-            | PAGE_PRESENT
-            | PAGE_WRITABLE;
+            | VMM_PRESENT
+            | VMM_WRITABLE;
     }
     else
     {
@@ -112,7 +146,7 @@ static uint64_t* walk_page_tables(
 
     uint64_t* pd;
 
-    if (!(pdpt[PDPT_INDEX(virtual_addr)] & PAGE_PRESENT))
+    if (!(pdpt[PDPT_INDEX(virtual_addr)] & VMM_PRESENT))
     {
         if (!create)
             return NULL;
@@ -124,20 +158,23 @@ static uint64_t* walk_page_tables(
 
         pdpt[PDPT_INDEX(virtual_addr)] =
             virt_to_phys(pd)
-            | PAGE_PRESENT
-            | PAGE_WRITABLE;
+            | VMM_PRESENT
+            | VMM_WRITABLE;
     }
     else
     {
-        pd = page_table_from_entry(
-            pdpt[PDPT_INDEX(virtual_addr)]);
-    }
+    if (entry_huge(pdpt[PDPT_INDEX(virtual_addr)]))
+        return NULL;
+
+    pd = page_table_from_entry(
+        pdpt[PDPT_INDEX(virtual_addr)]);
+    }   
 
     /* ---------- PD ---------- */
 
     uint64_t* pt;
 
-    if (!(pd[PD_INDEX(virtual_addr)] & PAGE_PRESENT))
+    if (!(pd[PD_INDEX(virtual_addr)] & VMM_PRESENT))
     {
         if (!create)
             return NULL;
@@ -149,37 +186,22 @@ static uint64_t* walk_page_tables(
 
         pd[PD_INDEX(virtual_addr)] =
             virt_to_phys(pt)
-            | PAGE_PRESENT
-            | PAGE_WRITABLE;
+            | VMM_PRESENT
+            | VMM_WRITABLE;
     }
     else
     {
-        pt = page_table_from_entry(
-            pd[PD_INDEX(virtual_addr)]);
+    if (pd[PD_INDEX(virtual_addr)] & VMM_HUGE)
+        return NULL;
+
+    pt = page_table_from_entry(
+        pd[PD_INDEX(virtual_addr)]);
     }
 
     return pt;
 }
 
-static inline uintptr_t read_cr3(void)
-{
-    uintptr_t value;
 
-    __asm__ volatile(
-        "mov %%cr3, %0"
-        : "=r"(value));
-
-    return value;
-}
-
-static inline void write_cr3(uintptr_t value)
-{
-    __asm__ volatile(
-        "mov %0, %%cr3"
-        :
-        : "r"(value)
-        : "memory");
-}
 
 address_space_t* vmm_kernel_space(void)
 {
@@ -219,7 +241,16 @@ bool vmm_map_page(
     if (space == NULL)
         return false;
 
+    if ((virtual_addr & (PAGE_SIZE - 1)) != 0)
+        return false;
+
+    if ((physical_addr & (PAGE_SIZE - 1)) != 0)
+        return false;
+
     uint64_t* pt = walk_page_tables(space, virtual_addr, true);
+
+
+
 
     if (pt == NULL)
         return false;
@@ -229,9 +260,19 @@ bool vmm_map_page(
     if (pt[index] & VMM_PRESENT)
         return false;      // Already mapped
 
-    pt[index] = (physical_addr & PAGE_MASK)
-              | flags
-              | VMM_PRESENT;
+    flags &= (
+    VMM_WRITABLE |
+    VMM_USER |
+    VMM_PWT |
+    VMM_PCD |
+    VMM_GLOBAL |
+    VMM_NX
+    );
+
+    pt[index] =
+        (physical_addr & PAGE_MASK)
+        | flags
+        | VMM_PRESENT;
 
     vmm_flush(virtual_addr);
 
@@ -244,8 +285,13 @@ bool vmm_unmap_page(
 {
     if (space == NULL)
         return false;
+    
+    if ((virtual_addr & (PAGE_SIZE - 1)) != 0)
+        return false;
 
     uint64_t* pt = walk_page_tables(space, virtual_addr, false);
+    
+
 
     if (pt == NULL)
         return false;
@@ -269,17 +315,22 @@ phys_addr_t vmm_translate(
     if (space == NULL)
         return 0;
 
+    if ((virtual_addr & (PAGE_SIZE - 1)) != 0)
+        return 0;
+
     uint64_t* pt = walk_page_tables(space, virtual_addr, false);
+
+
 
     if (pt == NULL)
         return 0;
 
     uint64_t entry = pt[PT_INDEX(virtual_addr)];
 
-    if (!(entry & VMM_PRESENT))
+    if (!(entry_present(entry)))
         return 0;
 
-    return (entry & PAGE_MASK) | (virtual_addr & 0xFFF);
+    return (entry_address(entry)) | (virtual_addr & 0xFFF);
 }
 
 address_space_t* vmm_create_space(void)
