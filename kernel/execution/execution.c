@@ -6,6 +6,7 @@
  */
 
 #include "execution.h"
+#include "scheduler.h"
 #include <stddef.h>
 
 static thread_t* thread_list = NULL;
@@ -13,13 +14,16 @@ static thread_t* thread_list = NULL;
 void execution_init(void)
 {
     thread_init();
+    scheduler_init();
 
     thread_list = NULL;
 }
 
-thread_t* execution_create(void)
+thread_t* execution_create(
+    void (*entry)(void*),
+    void* argument)
 {
-    thread_t* thread = thread_create();
+    thread_t* thread = thread_create(entry, argument);
 
     if (thread == NULL)
         return NULL;
@@ -40,6 +44,7 @@ thread_t* execution_create(void)
         current->next_all = thread;
     }
 
+    scheduler_add(thread);
     return thread;
 }
 
@@ -66,6 +71,7 @@ void execution_destroy(thread_t* thread)
             current->next_all = thread->next_all;
     }
 
+    scheduler_remove(thread);
     thread_destroy(thread);
 }
 

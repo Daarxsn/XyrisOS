@@ -2,24 +2,34 @@
 #define XYRIS_THREAD_H
 
 #include <stdint.h>
+#include <stddef.h>
+#include "context.h"
+#include "../memory/pmm.h"
+
+#define THREAD_STACK_PAGES 4
+#define THREAD_STACK_SIZE (THREAD_STACK_PAGES * PAGE_SIZE)
 
 typedef enum
 {
     THREAD_READY,
     THREAD_RUNNING,
     THREAD_BLOCKED,
-    THREAD_TERMINATED
+    THREAD_TERMINATED,
+    THREAD_SLEEPING
 
 } thread_state_t;
 
 typedef struct thread
 {
     uint64_t id;
+    void (*entry)(void*);
+    void* argument;
 
-    void* stack;
+    uintptr_t stack_base;
+    uintptr_t stack_top;
+    size_t stack_size;
 
-    uint64_t rsp;
-    uint64_t rip;
+    context_t context;
 
     thread_state_t state;
 
@@ -30,7 +40,9 @@ typedef struct thread
 
 void thread_init(void);
 
-thread_t* thread_create(void);
+thread_t* thread_create(
+    void (*entry)(void*),
+    void* argument);
 
 void thread_destroy(thread_t* thread);
 

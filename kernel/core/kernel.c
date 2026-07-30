@@ -18,10 +18,23 @@
 #include "cpu/pic.h"
 #include "cpu/pit.h"
 
+#include "kernel/memory/memory_map.h"
+#include "kernel/memory/hhdm.h"
+#include "kernel/memory/pmm.h"
+#include "kernel/memory/heap.h"
+#include "kernel/memory/vmm.h"
+
+#include "kernel/execution/thread.h"
+#include "kernel/execution/execution.h"
+#include "kernel/execution/scheduler.h"
+
 #include "boot/boot.h"
 
 #include "image/image.h"
 #include "image/logo.h"
+
+static void thread_a(void* arg);
+static void thread_b(void* arg);
 
 /* -------------------------------------------------
    Limine Requests
@@ -132,11 +145,52 @@ static void kernel_initialize_interrupts(void)
     boot_step_ok("CPU Interrupts Enabled");
 }
 
+static void kernel_initialize_memory(void)
+{
+    memory_map_init();
+    boot_step_ok("Memory Map Initialized");
+
+    hhdm_init();
+    boot_step_ok("HHDM Initialized");
+
+    pmm_init();
+    boot_step_ok("Physical Memory Manager Initialized");
+
+    heap_init();
+    boot_step_ok("Kernel Heap Initialized");
+
+    vmm_init();
+    boot_step_ok("Virtual Memory Manager Initialized");
+}
+
+static void kernel_initialize_execution(void)
+{
+    execution_init();
+    boot_step_ok("Execution Manager Initialized");
+}
+
 /* -------------------------------------------------
    Kernel Initialization
 ------------------------------------------------- */
+static void thread_a(void* arg)
+{
+    (void)arg;
+    
+    while (1)
+    {
+        printk("A");
+    }
+}
 
-
+static void thread_b(void* arg)
+{
+    (void)arg;
+    
+    while (1)
+    {
+        printk("B");
+    }
+}
 
    static void kernel_initialize_kernel(void)
 {
@@ -160,19 +214,16 @@ static void kernel_initialize_interrupts(void)
     xk_config_init();
     boot_step_ok("Configuration Manager Initialized");
 
-    /*
-     * These modules will be implemented
-     * by future members.
-     */
+    /* scheduler_init() only if execution_init() doesn't already do it */
 
-    boot_step_ok("Physical Memory Manager Ready");
+    /*boot_step_ok("Physical Memory Manager Ready");
     boot_step_ok("Debug Console Ready");
 
     boot_step_warn("ACPI Not Found");
-    boot_step_fail("PCI Enumeration Failed");
-    xk_event_init();
-boot_step_ok("Event Manager Initialized");
+    boot_step_fail("PCI Enumeration Failed");*/
 
+    execution_create(thread_a, NULL);
+    execution_create(thread_b, NULL);
     boot_success("Kernel Ready");
 }
 
@@ -189,9 +240,13 @@ void kernel_main(void)
 
     kernel_initialize_cpu();
 
-    kernel_initialize_interrupts();
+    kernel_initialize_memory();
+
+    kernel_initialize_execution();
 
     kernel_initialize_kernel();
+
+    kernel_initialize_interrupts();
 
     kernel_idle();
 }

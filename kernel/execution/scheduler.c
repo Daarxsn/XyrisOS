@@ -7,6 +7,7 @@
 
 #include "scheduler.h"
 #include <stddef.h>
+#include "switch.h"
 
 static thread_t* ready_head = NULL;
 static thread_t* ready_tail = NULL;
@@ -32,7 +33,7 @@ void scheduler_add(thread_t* thread)
     if (thread == NULL)
         return;
 
-    thread->next_all = NULL;
+    thread->next_ready = NULL;
 
     if (ready_head == NULL)
     {
@@ -41,7 +42,7 @@ void scheduler_add(thread_t* thread)
         return;
     }
 
-    ready_tail->next_all = thread;
+    ready_tail->next_ready = thread;
     ready_tail = thread;
 }
 
@@ -56,7 +57,7 @@ void scheduler_remove(thread_t* thread)
 
     if (ready_head == thread)
     {
-        ready_head = thread->next_all;
+        ready_head = thread->next_ready;
 
         if (ready_tail == thread)
             ready_tail = NULL;
@@ -67,15 +68,15 @@ void scheduler_remove(thread_t* thread)
     thread_t* current_thread = ready_head;
 
     while (current_thread != NULL &&
-           current_thread->next_all != thread)
+           current_thread->next_ready != thread)
     {
-        current_thread = current_thread->next_all;
+        current_thread = current_thread->next_ready;
     }
 
     if (current_thread == NULL)
         return;
 
-    current_thread->next_all = thread->next_all;
+    current_thread->next_ready = thread->next_ready;
 
     if (ready_tail == thread)
         ready_tail = current_thread;
@@ -92,9 +93,9 @@ thread_t* scheduler_next(void)
 
     current = ready_head;
 
-    ready_head = ready_head->next_all;
+    ready_head = ready_head->next_ready;
 
-    current->next_all = NULL;
+    current->next_ready = NULL;
 
     if (ready_head == NULL)
     {
@@ -103,7 +104,7 @@ thread_t* scheduler_next(void)
     }
     else
     {
-        ready_tail->next_all = current;
+        ready_tail->next_ready = current;
         ready_tail = current;
     }
 
@@ -123,7 +124,18 @@ void scheduler_tick(void)
      * Timer interrupts will call this later.
      */
 
-    scheduler_next();
+    thread_t* previous = scheduler_current();
+    thread_t* next = scheduler_next();
+
+    if (previous == NULL || next == NULL)
+        return;
+
+    if (previous == next)
+        return;
+
+    switch_context(
+        &previous->context,
+        &next->context);
 }
 
 /* --------------------------------------------------

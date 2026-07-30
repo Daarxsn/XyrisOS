@@ -17,12 +17,12 @@ add_executable(kernel.elf
     kernel/foundation2/resource.c
     kernel/foundation2/event.c
     kernel/foundation2/ukom.c
-kernel/foundation2/capability.c
-kernel/foundation2/resource.c
+    kernel/foundation2/capability.c
+    kernel/foundation2/resource.c
     kernel/foundation2/time.c
     kernel/foundation2/config.c
-kernel/foundation2/time.c
-kernel/foundation2/config.c
+    kernel/foundation2/time.c
+    kernel/foundation2/config.c
 
 
     # Graphics
@@ -51,6 +51,7 @@ kernel/foundation2/config.c
     kernel/execution/thread.c
     kernel/execution/execution.c
     kernel/execution/scheduler.c
+    kernel/execution/switch.c
 
     # Logger
     kernel/logger/logger.c

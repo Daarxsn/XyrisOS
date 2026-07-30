@@ -5,7 +5,9 @@
 
 void execution_init(void);
 
-thread_t* execution_create(void);
+thread_t* execution_create(
+    void (*entry)(void*),
+    void* argument);
 
 void execution_destroy(thread_t* thread);
 
