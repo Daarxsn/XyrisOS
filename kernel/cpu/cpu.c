@@ -1,5 +1,16 @@
 #include "cpu.h"
 
+uintptr_t cpu_read_cr2(void)
+{
+    uintptr_t value;
+
+    __asm__ volatile(
+        "mov %%cr2, %0"
+        : "=r"(value));
+
+    return value;
+}
+
 void cpu_halt(void)
 {
     __asm__ volatile("hlt");

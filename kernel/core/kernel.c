@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+
 #include "foundation/resource.h"
 #include "boot/limine.h"
 
@@ -9,6 +10,7 @@
 #include "foundation/event.h"
 #include "foundation/time.h"
 #include "foundation/config.h"
+
 #include "graphics/framebuffer.h"
 #include "ui/ui.h"
 
@@ -18,23 +20,26 @@
 #include "cpu/pic.h"
 #include "cpu/pit.h"
 
-#include "kernel/memory/memory_map.h"
-#include "kernel/memory/hhdm.h"
-#include "kernel/memory/pmm.h"
-#include "kernel/memory/heap.h"
-#include "kernel/memory/vmm.h"
+#include "memory/memory_map.h"
+#include "memory/hhdm.h"
+#include "memory/pmm.h"
+#include "memory/heap.h"
+#include "memory/vmm.h"
 
-#include "kernel/execution/thread.h"
-#include "kernel/execution/execution.h"
-#include "kernel/execution/scheduler.h"
+#include "execution/thread.h"
+#include "execution/execution.h"
+#include "execution/scheduler.h"
 
 #include "boot/boot.h"
 
 #include "image/image.h"
 #include "image/logo.h"
 
+
 static void thread_a(void* arg);
 static void thread_b(void* arg);
+
+
 
 /* -------------------------------------------------
    Limine Requests
@@ -44,6 +49,7 @@ __attribute__((used, section(".limine_requests")))
 static volatile uint64_t limine_base_revision[] =
     LIMINE_BASE_REVISION(6);
 
+
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_framebuffer_request framebuffer_request =
 {
@@ -51,13 +57,17 @@ static volatile struct limine_framebuffer_request framebuffer_request =
     .revision = 0
 };
 
+
 __attribute__((used, section(".limine_requests_start")))
 static volatile uint64_t limine_requests_start_marker[] =
     LIMINE_REQUESTS_START_MARKER;
 
+
 __attribute__((used, section(".limine_requests_end")))
 static volatile uint64_t limine_requests_end_marker[] =
     LIMINE_REQUESTS_END_MARKER;
+
+
 
 /* -------------------------------------------------
    Idle Loop
@@ -71,11 +81,13 @@ static void kernel_idle(void)
     }
 }
 
+
+
 /* -------------------------------------------------
    Boot Verification
 ------------------------------------------------- */
 
-static struct limine_framebuffer *kernel_verify_bootloader(void)
+static struct limine_framebuffer* kernel_verify_bootloader(void)
 {
     if (!LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision))
         kernel_idle();
@@ -89,13 +101,18 @@ static struct limine_framebuffer *kernel_verify_bootloader(void)
     return framebuffer_request.response->framebuffers[0];
 }
 
+
+
 /* -------------------------------------------------
    Graphics Initialization
 ------------------------------------------------- */
 
-static void kernel_initialize_graphics(struct limine_framebuffer *fb)
+static void kernel_initialize_graphics(
+    struct limine_framebuffer* fb
+)
 {
     framebuffer_init(fb);
+
     framebuffer_clear(0x1E1E2E);
 
     ui_init();
@@ -106,6 +123,8 @@ static void kernel_initialize_graphics(struct limine_framebuffer *fb)
     boot_step_ok("Framebuffer Initialized");
     boot_step_ok("Graphics Engine Initialized");
 }
+
+
 
 /* -------------------------------------------------
    CPU Initialization
@@ -121,9 +140,9 @@ static void kernel_initialize_cpu(void)
 
     isr_init();
     boot_step_ok("Interrupt Service Routines Loaded");
-
-    
 }
+
+
 
 /* -------------------------------------------------
    Interrupt Initialization
@@ -132,100 +151,250 @@ static void kernel_initialize_cpu(void)
 static void kernel_initialize_interrupts(void)
 {
     pic_initialize();
-    boot_step_ok("Programmable Interrupt Controller Initialized");
+
+    boot_step_ok(
+        "Programmable Interrupt Controller Initialized"
+    );
+
 
     pit_initialize(100);
-    boot_step_ok("Programmable Interval Timer Initialized");
+
+    boot_step_ok(
+        "Programmable Interval Timer Initialized"
+    );
+
 
     pic_unmask_irq(0);
-    boot_step_ok("Timer IRQ0 Enabled");
+
+    boot_step_ok(
+        "Timer IRQ0 Enabled"
+    );
+
 
     __asm__ volatile ("sti");
 
-    boot_step_ok("CPU Interrupts Enabled");
+    boot_step_ok(
+        "CPU Interrupts Enabled"
+    );
 }
+
+
+
+/* -------------------------------------------------
+   Memory Initialization
+------------------------------------------------- */
 
 static void kernel_initialize_memory(void)
 {
     memory_map_init();
-    boot_step_ok("Memory Map Initialized");
+
+    boot_step_ok(
+        "Memory Map Initialized"
+    );
+
 
     hhdm_init();
-    boot_step_ok("HHDM Initialized");
+
+    boot_step_ok(
+        "HHDM Initialized"
+    );
+
 
     pmm_init();
-    boot_step_ok("Physical Memory Manager Initialized");
+
+    pmm_stats_t stats = pmm_get_stats();
+
+    if (stats.free_pages > 0)
+    {
+    boot_step_ok("PMM Has Free Pages");
+    }
+    else
+    {
+    boot_step_fail("PMM Has NO Free Pages");
+    }
+
+    boot_step_ok(
+    "Physical Memory Manager Initialized"
+    );
 
     heap_init();
-    boot_step_ok("Kernel Heap Initialized");
+    void* heap_debug = kmalloc(16);
+
+if (heap_debug)
+{
+    boot_step_ok("Heap Allocation Working");
+}
+else
+{
+    boot_step_fail("Heap Allocation Broken");
+}
+
+    boot_step_ok(
+        "Kernel Heap Initialized"
+    );
+
 
     vmm_init();
-    boot_step_ok("Virtual Memory Manager Initialized");
+
+    boot_step_ok(
+        "Virtual Memory Manager Initialized"
+    );
 }
+
+
+
+/* -------------------------------------------------
+   Execution Initialization
+------------------------------------------------- */
 
 static void kernel_initialize_execution(void)
 {
     execution_init();
-    boot_step_ok("Execution Manager Initialized");
+
+    boot_step_ok(
+        "Execution Manager Initialized"
+    );
 }
 
+
+
 /* -------------------------------------------------
-   Kernel Initialization
+   Test Threads
 ------------------------------------------------- */
+
 static void thread_a(void* arg)
 {
     (void)arg;
-    
+
     while (1)
     {
-        printk("A");
+        __asm__ volatile ("hlt");
     }
 }
+
 
 static void thread_b(void* arg)
 {
     (void)arg;
-    
+
     while (1)
     {
-        printk("B");
+        __asm__ volatile ("hlt");
     }
 }
 
-   static void kernel_initialize_kernel(void)
-{
-    /* Foundation */
 
+
+/* -------------------------------------------------
+   Kernel Services
+------------------------------------------------- */
+
+static void kernel_initialize_kernel(void)
+{
     xkobject_init();
-    boot_step_ok("UKOM Initialized");
+
+    boot_step_ok(
+        "UKOM Initialized"
+    );
+
 
     xk_capability_init();
-    boot_step_ok("Capability Manager Initialized");
+
+    boot_step_ok(
+        "Capability Manager Initialized"
+    );
+
 
     xk_resource_init();
-    boot_step_ok("Resource Manager Initialized");
+
+    boot_step_ok(
+        "Resource Manager Initialized"
+    );
+
 
     xk_event_init();
-    boot_step_ok("Event Manager Initialized");
+
+    boot_step_ok(
+        "Event Manager Initialized"
+    );
+
 
     xk_time_init();
-    boot_step_ok("Time Manager Initialized");
+
+    boot_step_ok(
+        "Time Manager Initialized"
+    );
+
 
     xk_config_init();
-    boot_step_ok("Configuration Manager Initialized");
 
-    /* scheduler_init() only if execution_init() doesn't already do it */
+    boot_step_ok(
+        "Configuration Manager Initialized"
+    );
 
-    /*boot_step_ok("Physical Memory Manager Ready");
-    boot_step_ok("Debug Console Ready");
 
-    boot_step_warn("ACPI Not Found");
-    boot_step_fail("PCI Enumeration Failed");*/
+    execution_create(
+        thread_a,
+        NULL
+    );
 
-    execution_create(thread_a, NULL);
-    execution_create(thread_b, NULL);
-    boot_success("Kernel Ready");
+
+    execution_create(
+        thread_b,
+        NULL
+    );
+
+    /* -------------------------------------------------
+   Heap Test
+------------------------------------------------- */
+
+void* heap_test1 = kmalloc(64);
+void* heap_test2 = kmalloc(128);
+
+if (heap_test1 != NULL && heap_test2 != NULL)
+{
+    boot_step_ok("Kernel Heap Test Passed");
 }
+else
+{
+    boot_step_fail("Kernel Heap Test Failed");
+}
+
+kfree(heap_test1);
+kfree(heap_test2);
+/* ------------------------------
+   VMM Test
+------------------------------ */
+
+phys_addr_t page = pmm_alloc_page();
+
+if (page != 0)
+{
+    if (vmm_map_page(
+            vmm_kernel_space(),
+            0xFFFF900000000000ULL,
+            page,
+            VMM_WRITABLE))
+    {
+        boot_step_ok("Virtual Memory Manager Test Passed");
+    }
+    else
+    {
+        boot_step_fail("Virtual Memory Manager Test Failed");
+    }
+}
+else
+{
+    boot_step_fail("PMM Allocation Failed");
+}
+
+
+    boot_success(
+        "Kernel Ready"
+    );
+}
+
+
 
 /* -------------------------------------------------
    Kernel Entry
@@ -233,20 +402,29 @@ static void thread_b(void* arg)
 
 void kernel_main(void)
 {
-    struct limine_framebuffer *framebuffer =
+    struct limine_framebuffer* framebuffer =
         kernel_verify_bootloader();
 
-    kernel_initialize_graphics(framebuffer);
+
+    kernel_initialize_graphics(
+        framebuffer
+    );
+
 
     kernel_initialize_cpu();
 
+
     kernel_initialize_memory();
+
 
     kernel_initialize_execution();
 
+
     kernel_initialize_kernel();
 
+
     kernel_initialize_interrupts();
+
 
     kernel_idle();
 }
