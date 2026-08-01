@@ -1,4 +1,6 @@
 #include "exceptions.h"
+#include "page_fault.h"
+
 #include "../debug/panic.h"
 
 static const char *exception_names[32] =
@@ -25,8 +27,13 @@ static const char *exception_names[32] =
     "SIMD Floating Point",
     "Virtualization",
     "Control Protection",
-    "Reserved","Reserved","Reserved","Reserved",
-    "Reserved","Reserved","Hypervisor Injection",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Reserved",
+    "Hypervisor Injection",
     "VMM Communication",
     "Security Exception",
     "Reserved"
@@ -34,14 +41,19 @@ static const char *exception_names[32] =
 
 void exception_dispatch(registers_t *regs)
 {
-    (void)regs;
-
     const char *name = "Unknown Exception";
 
     if (regs->vector < 32)
+    {
         name = exception_names[regs->vector];
+    }
 
-    (void)name;
+    /* Dedicated Page Fault Handler */
+    if (regs->vector == 14)
+    {
+        page_fault_handler(regs);
+        return;
+    }
 
-        kernel_panic(regs, name);
+    kernel_panic(regs, name);
 }
