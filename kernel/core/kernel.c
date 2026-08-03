@@ -31,7 +31,6 @@
 #include "execution/scheduler.h"
 
 #include "boot/boot.h"
-#include "init/init.h"
 
 #include "image/image.h"
 #include "image/logo.h"
@@ -43,16 +42,13 @@ static void thread_b(void* arg);
 
 
 /* -------------------------------------------------
-   Limine Base Revision
+   Limine Requests
 ------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests")))
 static volatile uint64_t limine_base_revision[] =
     LIMINE_BASE_REVISION(6);
 
-/* -------------------------------------------------
-   Framebuffer Request
-------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_framebuffer_request framebuffer_request =
@@ -61,10 +57,6 @@ static volatile struct limine_framebuffer_request framebuffer_request =
     .revision = 0
 };
 
-
-/* -------------------------------------------------
-   Request Markers
-------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests_start")))
 static volatile uint64_t limine_requests_start_marker[] =
@@ -78,21 +70,21 @@ static volatile uint64_t limine_requests_end_marker[] =
 
 
 /* -------------------------------------------------
-   Kernel Idle
+   Idle Loop
 ------------------------------------------------- */
 
 static void kernel_idle(void)
 {
     while (1)
     {
-        __asm__ volatile("hlt");
+        __asm__ volatile ("hlt");
     }
 }
 
 
 
 /* -------------------------------------------------
-   Verify Bootloader
+   Boot Verification
 ------------------------------------------------- */
 
 static struct limine_framebuffer* kernel_verify_bootloader(void)
@@ -121,15 +113,9 @@ static void kernel_initialize_graphics(
 {
     framebuffer_init(fb);
 
-    struct limine_framebuffer *framebuffer)
-{
-    framebuffer_init(framebuffer);
-
-
     framebuffer_clear(0x1E1E2E);
 
     ui_init();
-
 
     boot_init();
     boot_header();
@@ -368,8 +354,6 @@ void* heap_test2 = kmalloc(128);
 if (heap_test1 != NULL && heap_test2 != NULL)
 {
     boot_step_ok("Kernel Heap Test Passed");
-=======
->>>>>>> 99d0681 (Complete Member 5 architecture: Process & Scheduling framework)
 }
 else
 {
@@ -418,7 +402,6 @@ else
 
 void kernel_main(void)
 {
-
     struct limine_framebuffer* framebuffer =
         kernel_verify_bootloader();
 
@@ -428,24 +411,7 @@ void kernel_main(void)
     );
 
 
-    /*
-     * Verify Limine Bootloader
-     */
-
-    struct limine_framebuffer *framebuffer =
-        kernel_verify_bootloader();
-
-    /*
-     * Initialize Graphics
-     */
-
-    kernel_initialize_graphics(framebuffer);
-
-
-    /*
-     * Boot User Interface
-     */
-
+    kernel_initialize_cpu();
 
 
     kernel_initialize_memory();
@@ -453,26 +419,8 @@ void kernel_main(void)
 
     kernel_initialize_execution();
 
-    boot_init();
 
-
-    boot_header();
-
-    /*
-     * Initialize Kernel
-     */
-
-    kernel_initialize();
-
-    /*
-     * Boot Complete
-     */
-
-    boot_success("Kernel Ready");
-
-    /*
-     * Enter Idle State
-     */
+    kernel_initialize_kernel();
 
 
     kernel_initialize_interrupts();
