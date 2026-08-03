@@ -3,64 +3,54 @@
 
 #include <stdint.h>
 
-#include "thread.h"
+#include "queue.h"
 
 /*
  * ============================================================
  * XyrisOS Scheduler
  * ------------------------------------------------------------
- * Round-Robin Scheduler Interface
+ * Round-Robin Scheduler
  * ============================================================
  */
 
-/*
- * ------------------------------------------------------------
- * Scheduler Configuration
- * ------------------------------------------------------------
- */
-
-#define SCHEDULER_DEFAULT_TIME_SLICE    10
+#define SCHEDULER_DEFAULT_TIME_SLICE 10
 
 /*
  * ------------------------------------------------------------
- * Scheduler Structure
+ * Scheduler
  * ------------------------------------------------------------
  */
 
 typedef struct scheduler
 {
     /*
-     * Currently executing thread
+     * Currently Running Thread
      */
 
     thread_t *current;
 
     /*
-     * Ready queue
+     * Scheduler Queues
      */
 
-    thread_t *ready_head;
+    thread_queue_t ready_queue;
 
-    thread_t *ready_tail;
+    thread_queue_t blocked_queue;
 
-    /*
-     * Sleeping queue
-     */
-
-    thread_t *sleep_head;
+    thread_queue_t sleeping_queue;
 
     /*
      * Statistics
      */
 
-    uint64_t total_threads;
+    uint64_t ticks;
 
     uint64_t context_switches;
 
-    uint64_t ticks;
+    uint64_t total_threads;
 
     /*
-     * Time slice
+     * Time Slice
      */
 
     uint32_t time_slice;

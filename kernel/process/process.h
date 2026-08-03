@@ -8,7 +8,8 @@
  * ============================================================
  * XyrisOS Process Manager
  * ------------------------------------------------------------
- * Defines the Process Control Block (PCB) and public API.
+ * Defines the Process Control Block (PCB) and public API for
+ * process lifecycle management.
  * ============================================================
  */
 
@@ -18,8 +19,18 @@
  * ------------------------------------------------------------
  */
 
-#define PROCESS_NAME_LENGTH    32
-#define PROCESS_MAX_PROCESSES  256
+#define PROCESS_MAX_COUNT      128
+#define PROCESS_NAME_LENGTH    64
+
+/*
+ * ------------------------------------------------------------
+ * Forward Declaration
+ * ------------------------------------------------------------
+ */
+
+struct thread;
+
+typedef struct thread thread_t;
 
 /*
  * ------------------------------------------------------------
@@ -43,24 +54,15 @@ typedef enum
 
     PROCESS_RUNNING,
 
-    PROCESS_BLOCKED,
-
-    PROCESS_SLEEPING,
+    PROCESS_WAITING,
 
     PROCESS_TERMINATED
 
 } process_state_t;
 
 /*
- * Forward declaration.
- * The complete definition exists in thread.h.
- */
-
-struct thread;
-
-/*
  * ------------------------------------------------------------
- * Process Control Block (PCB)
+ * Process Control Block
  * ------------------------------------------------------------
  */
 
@@ -69,37 +71,46 @@ typedef struct process
     /*
      * Identification
      */
+
     process_id_t pid;
 
     char name[PROCESS_NAME_LENGTH];
 
     /*
-     * Current process state
+     * State
      */
+
     process_state_t state;
 
     /*
-     * Main thread
+     * Process Type
      */
-    struct thread *main_thread;
+
+    bool kernel_process;
 
     /*
-     * Memory information
-     * (Used later by Member 6)
+     * Main Thread
      */
+
+    thread_t *main_thread;
+
+    /*
+     * Address Space
+     */
+
     void *address_space;
 
     /*
-     * CPU accounting
+     * Statistics
      */
+
     uint64_t cpu_time;
 
-    uint64_t wakeup_tick;
-
     /*
-     * Kernel or user process
+     * Process Flags
      */
-    bool kernel_process;
+
+    uint32_t flags;
 
 } process_t;
 
@@ -109,30 +120,36 @@ typedef struct process
  * ------------------------------------------------------------
  */
 
-void process_manager_initialize(void);
+/*
+ * Initialize process manager.
+ */
+void process_initialize(void);
 
+/*
+ * Create a process.
+ */
 process_t *process_create(
     const char *name,
     bool kernel_process
 );
 
+/*
+ * Destroy a process.
+ */
 void process_destroy(
     process_t *process
 );
 
-process_t *process_lookup(
-    process_id_t pid
-);
-
+/*
+ * Get current process.
+ */
 process_t *process_current(void);
 
-void process_set_state(
-    process_t *process,
-    process_state_t state
-);
-
-process_state_t process_get_state(
-    const process_t *process
+/*
+ * Set current process.
+ */
+void process_set_current(
+    process_t *process
 );
 
 #endif

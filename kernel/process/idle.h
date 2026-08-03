@@ -3,36 +3,21 @@
 
 /*
  * ============================================================
- * XyrisOS Idle Process
+ * XyrisOS Idle Thread
  * ------------------------------------------------------------
  * The idle thread executes whenever there are no runnable
- * threads in the scheduler.
- *
- * The idle thread is never destroyed and always exists.
+ * threads in the system.
  * ============================================================
  */
 
-#include "thread.h"
-
 /*
- * ------------------------------------------------------------
- * Idle Thread API
- * ------------------------------------------------------------
- */
-
-/*
- * Initialize the idle thread.
+ * Initialize idle thread subsystem.
  */
 void idle_initialize(void);
 
 /*
- * Return the idle thread.
+ * Idle thread entry point.
  */
-thread_t *idle_thread(void);
-
-/*
- * Idle thread entry function.
- */
-void idle_entry(void);
+void idle_thread(void);
 
 #endif

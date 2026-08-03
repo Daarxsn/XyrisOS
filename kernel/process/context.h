@@ -1,42 +1,65 @@
 #ifndef XYRIS_CONTEXT_H
 #define XYRIS_CONTEXT_H
 
-#include "thread.h"
+#include <stdint.h>
 
 /*
  * ============================================================
- * XyrisOS Context Switching
+ * XyrisOS Context Manager
  * ------------------------------------------------------------
- * Saves and restores CPU execution contexts.
+ * Architecture-independent CPU context interface.
  * ============================================================
  */
 
 /*
  * ------------------------------------------------------------
- * Context Switch API
+ * CPU Context
+ * ------------------------------------------------------------
+ *
+ * NOTE:
+ * This is intentionally minimal.
+ * The real register save/restore implementation
+ * will be added during the assembly context switch
+ * phase.
+ */
+
+typedef struct context
+{
+    uint64_t rsp;
+
+    uint64_t rip;
+
+    uint64_t rflags;
+
+} context_t;
+
+/*
+ * ------------------------------------------------------------
+ * Context API
  * ------------------------------------------------------------
  */
 
 /*
- * Save the current thread context.
+ * Initialize context manager.
  */
-void context_save(
-    thread_t *thread
-);
+void context_initialize(void);
 
 /*
- * Restore a previously saved thread context.
+ * Save current CPU context.
  */
-void context_restore(
-    thread_t *thread
-);
+void context_save(context_t *context);
 
 /*
- * Switch execution from one thread to another.
+ * Restore CPU context.
+ */
+void context_restore(context_t *context);
+
+/*
+ * Switch execution from one context to another.
  */
 void context_switch(
-    thread_t *current,
-    thread_t *next
+    context_t *current,
+    context_t *next
 );
 
 #endif
