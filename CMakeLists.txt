@@ -7,6 +7,7 @@
     set(CMAKE_C_STANDARD 23)
 
     add_executable(kernel.elf
+    # Core
     kernel/core/kernel.c
 
     # Graphics
@@ -14,7 +15,7 @@
     kernel/graphics/graphics.c
     kernel/graphics/font.c
 
-    # Terminal/UI
+    # Terminal / UI
     kernel/terminal/terminal.c
     kernel/ui/ui.c
     kernel/image/image.c
@@ -28,9 +29,7 @@
     kernel/memory/hhdm.c
 
     # Execution
-    kernel/execution/thread.c
     kernel/execution/execution.c
-    kernel/execution/scheduler.c
 
     # Logger
     kernel/logger/logger.c
@@ -52,9 +51,25 @@
     kernel/debug/print.c
     kernel/debug/hex.c
 
-    #Boot
+    # Kernel Library
+    kernel/lib/string.c
+
+    # Boot
     kernel/boot/boot.c
-    
+
+    # Process Management
+    kernel/process/process.c
+    kernel/process/thread.c
+    kernel/process/queue.c
+    kernel/process/scheduler.c
+    kernel/process/context.c
+    kernel/process/idle.c
+
+    # Initialization
+    kernel/init/init.c
+
+    # Kernel Tests
+    kernel/tests/scheduler_test.c
 )
 
 

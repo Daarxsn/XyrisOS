@@ -7,21 +7,20 @@
 #include "graphics/framebuffer.h"
 #include "ui/ui.h"
 
-#include "cpu/gdt.h"
-#include "cpu/idt.h"
-#include "cpu/isr.h"
-#include "cpu/pic.h"
-#include "cpu/pit.h"
-
 #include "boot/boot.h"
+#include "init/init.h"
 
 /* -------------------------------------------------
-   Limine Requests
+   Limine Base Revision
 ------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests")))
 static volatile uint64_t limine_base_revision[] =
     LIMINE_BASE_REVISION(6);
+
+/* -------------------------------------------------
+   Framebuffer Request
+------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests")))
 static volatile struct limine_framebuffer_request framebuffer_request =
@@ -29,6 +28,10 @@ static volatile struct limine_framebuffer_request framebuffer_request =
     .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
     .revision = 0
 };
+
+/* -------------------------------------------------
+   Request Markers
+------------------------------------------------- */
 
 __attribute__((used, section(".limine_requests_start")))
 static volatile uint64_t limine_requests_start_marker[] =
@@ -39,19 +42,19 @@ static volatile uint64_t limine_requests_end_marker[] =
     LIMINE_REQUESTS_END_MARKER;
 
 /* -------------------------------------------------
-   Idle Loop
+   Kernel Idle
 ------------------------------------------------- */
 
 static void kernel_idle(void)
 {
     while (1)
     {
-        __asm__ volatile ("hlt");
+        __asm__ volatile("hlt");
     }
 }
 
 /* -------------------------------------------------
-   Boot Verification
+   Verify Bootloader
 ------------------------------------------------- */
 
 static struct limine_framebuffer *kernel_verify_bootloader(void)
@@ -72,74 +75,14 @@ static struct limine_framebuffer *kernel_verify_bootloader(void)
    Graphics Initialization
 ------------------------------------------------- */
 
-static void kernel_initialize_graphics(struct limine_framebuffer *fb)
+static void kernel_initialize_graphics(
+    struct limine_framebuffer *framebuffer)
 {
-    framebuffer_init(fb);
+    framebuffer_init(framebuffer);
+
     framebuffer_clear(0x1E1E2E);
 
     ui_init();
-
-    boot_init();
-    boot_header();
-
-    boot_step_ok("Framebuffer Initialized");
-    boot_step_ok("Graphics Engine Initialized");
-}
-
-/* -------------------------------------------------
-   CPU Initialization
-------------------------------------------------- */
-
-static void kernel_initialize_cpu(void)
-{
-    gdt_init();
-    boot_step_ok("Global Descriptor Table Loaded");
-
-    idt_init();
-    boot_step_ok("Interrupt Descriptor Table Loaded");
-
-    isr_init();
-    boot_step_ok("Interrupt Service Routines Loaded");
-}
-
-/* -------------------------------------------------
-   Interrupt Initialization
-------------------------------------------------- */
-
-static void kernel_initialize_interrupts(void)
-{
-    pic_initialize();
-    boot_step_ok("Programmable Interrupt Controller Initialized");
-
-    pit_initialize(100);
-    boot_step_ok("Programmable Interval Timer Initialized");
-
-    pic_unmask_irq(0);
-    boot_step_ok("Timer IRQ0 Enabled");
-
-    __asm__ volatile ("sti");
-
-    boot_step_ok("CPU Interrupts Enabled");
-}
-
-/* -------------------------------------------------
-   Kernel Initialization
-------------------------------------------------- */
-
-static void kernel_initialize_kernel(void)
-{
-    /*
-     * These modules will be implemented
-     * by future members.
-     */
-
-    boot_step_ok("Physical Memory Manager Ready");
-    boot_step_ok("Debug Console Ready");
-
-    boot_step_warn("ACPI Not Found");
-    boot_step_fail("PCI Enumeration Failed");
-
-    boot_success("Kernel Ready");
 }
 
 /* -------------------------------------------------
@@ -148,16 +91,42 @@ static void kernel_initialize_kernel(void)
 
 void kernel_main(void)
 {
+    /*
+     * Verify Limine Bootloader
+     */
+
     struct limine_framebuffer *framebuffer =
         kernel_verify_bootloader();
 
+    /*
+     * Initialize Graphics
+     */
+
     kernel_initialize_graphics(framebuffer);
 
-    kernel_initialize_cpu();
+    /*
+     * Boot User Interface
+     */
 
-    kernel_initialize_interrupts();
+    boot_init();
 
-    kernel_initialize_kernel();
+    boot_header();
+
+    /*
+     * Initialize Kernel
+     */
+
+    kernel_initialize();
+
+    /*
+     * Boot Complete
+     */
+
+    boot_success("Kernel Ready");
+
+    /*
+     * Enter Idle State
+     */
 
     kernel_idle();
 }
