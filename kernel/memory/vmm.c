@@ -370,10 +370,6 @@ bool vmm_map_page(
     return true;
 }
 
-
-
-
-
 bool vmm_unmap_page(
     address_space_t* space,
     uintptr_t virtual_addr)
@@ -415,7 +411,53 @@ bool vmm_unmap_page(
     return true;
 }
 
+bool vmm_protect_page(
+    address_space_t* space,
+    uintptr_t virtual_addr,
+    uint64_t flags)
+{
+    if (space == NULL)
+        return false;
 
+    if ((virtual_addr & (PAGE_SIZE - 1)) != 0)
+        return false;
+
+    uint64_t* pt =
+        walk_page_tables(space, virtual_addr, false);
+
+    if (pt == NULL)
+        return false;
+
+    size_t index = PT_INDEX(virtual_addr);
+
+    if (!(pt[index] & VMM_PRESENT))
+        return false;
+
+    flags &= (
+        VMM_WRITABLE |
+        VMM_USER |
+        VMM_PWT |
+        VMM_PCD |
+        VMM_GLOBAL |
+        VMM_NX
+    );
+
+    uint64_t entry = pt[index];
+
+    uint64_t preserve =
+    entry & ~(VMM_WRITABLE |
+              VMM_USER |
+              VMM_PWT |
+              VMM_PCD |
+              VMM_GLOBAL |
+              VMM_NX);
+
+pt[index] = preserve | flags;
+
+    vmm_flush(virtual_addr);
+
+    return true;
+}
 
 
 
