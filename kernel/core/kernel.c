@@ -41,7 +41,7 @@
 #include "debug/hex.h"
 
 #include "debug/print.h"
-#include "lib/string.h"
+#include "string.h"
 
 
 static void thread_a(void* arg);

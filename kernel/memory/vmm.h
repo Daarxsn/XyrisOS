@@ -58,6 +58,11 @@ bool vmm_unmap_page(
     address_space_t* space,
     uintptr_t virtual_addr);
 
+    bool vmm_protect_page(
+    address_space_t* space,
+    uintptr_t virtual_addr,
+    uint64_t flags);
+
 phys_addr_t vmm_translate(
     address_space_t* space,
     uintptr_t virtual_addr);
