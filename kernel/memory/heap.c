@@ -36,9 +36,9 @@ static uint8_t* heap_end = NULL;
    Alignment
 -------------------------------------------------- */
 
-static size_t align8(size_t size)
+static size_t align16(size_t size)
 {
-    return (size + 7) & ~7;
+    return (size + 15) & ~15;
 }
 
 
@@ -96,7 +96,7 @@ void* kmalloc(size_t size)
         return NULL;
 
 
-    size = align8(size);
+    size = align16(size);
 
 
     if(heap_current + size > heap_end)

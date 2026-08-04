@@ -12,6 +12,10 @@ add_executable(kernel.elf
     # Core
     kernel/core/kernel.c
 
+    # Tests
+    kernel/tests/tests.c
+    kernel/tests/memory_tests.c
+
     # Standard Library Replacement
     kernel/string.c
 

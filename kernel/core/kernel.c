@@ -35,6 +35,14 @@
 #include "image/image.h"
 #include "image/logo.h"
 
+#include "../tests/tests.h"
+
+#include "debug/print.h"
+#include "debug/hex.h"
+
+#include "debug/print.h"
+#include "lib/string.h"
+
 
 static void thread_a(void* arg);
 static void thread_b(void* arg);
@@ -202,20 +210,70 @@ static void kernel_initialize_memory(void)
 
     pmm_init();
 
-    pmm_stats_t stats = pmm_get_stats();
+pmm_stats_t stats = pmm_get_stats();
 
-    if (stats.free_pages > 0)
-    {
+if (stats.free_pages > 0)
+{
     boot_step_ok("PMM Has Free Pages");
-    }
-    else
-    {
+}
+else
+{
     boot_step_fail("PMM Has NO Free Pages");
-    }
+}
 
-    boot_step_ok(
-    "Physical Memory Manager Initialized"
-    );
+boot_step_ok("Physical Memory Manager Initialized");
+
+/* ------------------------------------
+   Memory Statistics
+------------------------------------ */
+
+debug_print_line("");
+debug_print_line("========== MEMORY STATISTICS ==========");
+
+uint64_t total_mb =
+    stats.total_memory / (1024 * 1024);
+
+uint64_t usable_mb =
+    stats.usable_memory / (1024 * 1024);
+
+uint64_t reserved_mb =
+    stats.reserved_memory / (1024 * 1024);
+
+char buffer[32];
+
+debug_print("Total Memory    : ");
+itoa(total_mb, buffer, 10);
+debug_print(buffer);
+debug_print_line(" MB");
+
+debug_print("Usable Memory   : ");
+itoa(usable_mb, buffer, 10);
+debug_print(buffer);
+debug_print_line(" MB");
+
+debug_print("Reserved Memory : ");
+itoa(reserved_mb, buffer, 10);
+debug_print(buffer);
+debug_print_line(" MB");
+
+debug_print("Total Pages     : ");
+itoa(stats.total_pages, buffer, 10);
+debug_print_line(buffer);
+
+debug_print("Free Pages      : ");
+itoa(stats.free_pages, buffer, 10);
+debug_print_line(buffer);
+
+debug_print("Used Pages      : ");
+itoa(stats.used_pages, buffer, 10);
+debug_print_line(buffer);
+
+debug_print("Reserved Pages  : ");
+itoa(stats.reserved_pages, buffer, 10);
+debug_print_line(buffer);
+
+debug_print_line("=======================================");
+debug_print_line("");
 
     heap_init();
     void* heap_debug = kmalloc(16);
@@ -388,6 +446,9 @@ else
     boot_step_fail("PMM Allocation Failed");
 }
 
+
+
+run_kernel_tests();
 
     boot_success(
         "Kernel Ready"
