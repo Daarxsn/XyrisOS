@@ -151,3 +151,4 @@ target_link_options(kernel.elf PRIVATE
 
     -T ${CMAKE_SOURCE_DIR}/boot/linker.ld
 )
+   

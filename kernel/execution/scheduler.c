@@ -55,6 +55,7 @@ void scheduler_remove(thread_t* thread)
     if (thread == NULL)
         return;
 
+    /* Thread is the head of the ready queue */
     if (ready_head == thread)
     {
         ready_head = thread->next_ready;
@@ -62,9 +63,12 @@ void scheduler_remove(thread_t* thread)
         if (ready_tail == thread)
             ready_tail = NULL;
 
+        /* Fully detach the thread from the queue */
+        thread->next_ready = NULL;
         return;
     }
 
+    /* Find the thread in the ready queue */
     thread_t* current_thread = ready_head;
 
     while (current_thread != NULL &&
@@ -73,13 +77,19 @@ void scheduler_remove(thread_t* thread)
         current_thread = current_thread->next_ready;
     }
 
+    /* Thread not found */
     if (current_thread == NULL)
         return;
 
+    /* Unlink the thread */
     current_thread->next_ready = thread->next_ready;
 
+    /* Update tail if required */
     if (ready_tail == thread)
         ready_tail = current_thread;
+
+    /* Fully detach the thread from the queue */
+    thread->next_ready = NULL;
 }
 
 /* --------------------------------------------------
@@ -117,21 +127,26 @@ thread_t* scheduler_next(void)
 
 void scheduler_tick(void)
 {
-    /*
-     * Phase 1:
-     * Simply advance to the next thread.
-     *
-     * Timer interrupts will call this later.
-     */
-
     thread_t* previous = scheduler_current();
     thread_t* next = scheduler_next();
 
-    if (previous == NULL || next == NULL)
+    if (next == NULL)
         return;
+
+    /*
+     * First thread.
+     */
+    if (previous == NULL)
+    {
+        current = next;
+        switch_context(NULL, &next->context);
+        return;
+    }
 
     if (previous == next)
         return;
+
+    current = next;
 
     switch_context(
         &previous->context,

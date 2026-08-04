@@ -109,10 +109,9 @@ void thread_destroy(thread_t* thread)
     thread->state = THREAD_TERMINATED;
 
 
-    /*
-     * Stack freeing will be added
-     * when PMM deallocation is implemented.
-     */
+    pmm_free_pages(
+        (phys_addr_t)virt_to_phys((void*)thread->stack_base),
+        THREAD_STACK_PAGES);
 
     kfree(thread);
 }

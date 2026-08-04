@@ -77,11 +77,7 @@ void execution_destroy(thread_t* thread)
 
 void execution_yield(void)
 {
-    /*
-     * Phase 1
-     *
-     * Scheduler will implement this.
-     */
+    scheduler_tick();
 }
 
 thread_t* execution_first(void)

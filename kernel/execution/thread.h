@@ -44,6 +44,25 @@ thread_t* thread_create(
     void (*entry)(void*),
     void* argument);
 
-void thread_destroy(thread_t* thread);
+void thread_destroy(thread_t* thread)
+{
+    if (thread == NULL)
+        return;
+
+    thread->state = THREAD_TERMINATED;
+
+    /*
+     * Release stack pages back to the
+     * Physical Memory Manager.
+     */
+    pmm_free_pages(
+        (phys_addr_t)virt_to_phys((void*)thread->stack_base),
+        THREAD_STACK_PAGES);
+
+    /*
+     * Free thread object.
+     */
+    kfree(thread);
+}
 
 #endif
