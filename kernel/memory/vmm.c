@@ -415,6 +415,8 @@ bool vmm_protect_page(
     address_space_t* space,
     uintptr_t virtual_addr,
     uint64_t flags)
+
+    
 {
     if (space == NULL)
         return false;
@@ -459,6 +461,41 @@ pt[index] = preserve | flags;
     return true;
 }
 
+
+uint64_t vmm_get_page_flags(
+    address_space_t* space,
+    uintptr_t virtual_addr)
+{
+    if (space == NULL)
+        return 0;
+
+    if ((virtual_addr & (PAGE_SIZE - 1)) != 0)
+        return 0;
+
+    uint64_t* pt =
+        walk_page_tables(space, virtual_addr, false);
+
+    if (pt == NULL)
+        return 0;
+
+    uint64_t entry =
+        pt[PT_INDEX(virtual_addr)];
+
+    if (!(entry & VMM_PRESENT))
+        return 0;
+
+    return entry &
+        (VMM_PRESENT |
+         VMM_WRITABLE |
+         VMM_USER |
+         VMM_PWT |
+         VMM_PCD |
+         VMM_ACCESSED |
+         VMM_DIRTY |
+         VMM_HUGE |
+         VMM_GLOBAL |
+         VMM_NX);
+}
 
 
 phys_addr_t vmm_translate(

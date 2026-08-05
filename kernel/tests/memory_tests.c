@@ -164,6 +164,25 @@ void run_memory_tests(void)
         boot_step_fail("VMM Test: Translate");
     }
 
+    /* ---------------------------------
+       VMM Get Flags Test
+    ---------------------------------- */
+
+    uint64_t page_flags =
+        vmm_get_page_flags(
+            vmm_kernel_space(),
+            virt);
+
+    if ((page_flags & VMM_PRESENT) &&
+        (page_flags & VMM_WRITABLE))
+    {
+        boot_step_ok("VMM Test: Get Flags");
+    }
+    else
+    {
+        boot_step_fail("VMM Test: Get Flags");
+    }
+
     if (vmm_unmap_page(vmm_kernel_space(), virt))
     {
         boot_step_ok("VMM Test: Unmap Page");
