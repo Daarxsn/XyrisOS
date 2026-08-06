@@ -1,6 +1,7 @@
 #include "memory_tests.h"
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "../memory/pmm.h"
 #include "../memory/heap.h"
@@ -183,6 +184,36 @@ void run_memory_tests(void)
         boot_step_fail("VMM Test: Get Flags");
     }
 
+    /* ---------------------------------
+       VMM Protect Page Test
+    ---------------------------------- */
+
+    if (vmm_protect_page(
+            vmm_kernel_space(),
+            virt,
+            VMM_PRESENT))
+    {
+        boot_step_ok("VMM Test: Protect Page");
+    }
+    else
+    {
+        boot_step_fail("VMM Test: Protect Page");
+    }
+
+    page_flags =
+        vmm_get_page_flags(
+            vmm_kernel_space(),
+            virt);
+
+    if (!(page_flags & VMM_WRITABLE))
+    {
+        boot_step_ok("VMM Test: Updated Flags");
+    }
+    else
+    {
+        boot_step_fail("VMM Test: Updated Flags");
+    }
+
     if (vmm_unmap_page(vmm_kernel_space(), virt))
     {
         boot_step_ok("VMM Test: Unmap Page");
@@ -192,5 +223,117 @@ void run_memory_tests(void)
         boot_step_fail("VMM Test: Unmap Page");
     }
 
+    /* ---------------------------------
+       VMM Invalid Translate Test
+    ---------------------------------- */
+
+    if (vmm_translate(
+            vmm_kernel_space(),
+            virt) == 0)
+    {
+        boot_step_ok("VMM Test: Invalid Translate");
+    }
+    else
+    {
+        boot_step_fail("VMM Test: Invalid Translate");
+    }
+
+    /* ---------------------------------
+       VMM Double Unmap Test
+    ---------------------------------- */
+
+    if (!vmm_unmap_page(
+            vmm_kernel_space(),
+            virt))
+    {
+        boot_step_ok("VMM Test: Double Unmap");
+    }
+    else
+    {
+        boot_step_fail("VMM Test: Double Unmap");
+    }
+
+    /* ---------------------------------
+       VMM Protect Missing Page Test
+    ---------------------------------- */
+
+    if (!vmm_protect_page(
+            vmm_kernel_space(),
+            virt,
+            VMM_WRITABLE))
+    {
+        boot_step_ok("VMM Test: Protect Missing Page");
+    }
+    else
+    {
+        boot_step_fail("VMM Test: Protect Missing Page");
+    }
+
     pmm_free_page(phys);
+
+    /* ---------------------------------
+   Address Space Tests
+---------------------------------- */
+
+address_space_t* space =
+    vmm_create_space();
+
+if (space != NULL)
+{
+    boot_step_ok("VMM Test: Create Address Space");
+}
+else
+{
+    boot_step_fail("VMM Test: Create Address Space");
+    return;
+}
+
+vmm_destroy_space(space);
+
+boot_step_ok("VMM Test: Destroy Address Space");
+
+/* ---------------------------------
+   Address Space Stress Test
+---------------------------------- */
+
+pmm_stats_t stats_before =
+    pmm_get_stats();
+
+bool stress_success = true;
+
+for (int i = 0; i < 100; i++)
+{
+    space = vmm_create_space();
+
+    if (space == NULL)
+    {
+        stress_success = false;
+        break;
+    }
+
+    vmm_destroy_space(space);
+}
+
+if (stress_success)
+{
+    boot_step_ok("VMM Test: Address Space Stress");
+}
+else
+{
+    boot_step_fail("VMM Test: Address Space Stress");
+    return;
+}
+
+pmm_stats_t stats_after =
+    pmm_get_stats();
+
+if (stats_before.free_pages == stats_after.free_pages &&
+    stats_before.used_pages == stats_after.used_pages)
+{
+    boot_step_ok("VMM Test: No Memory Leak");
+}
+else
+{
+    boot_step_fail("VMM Test: No Memory Leak");
+}
 }
