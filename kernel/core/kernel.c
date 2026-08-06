@@ -35,6 +35,7 @@
 #include "image/image.h"
 #include "image/logo.h"
 
+<<<<<<< HEAD
 #include "../tests/tests.h"
 
 #include "debug/print.h"
@@ -46,6 +47,11 @@
 
 static void thread_a(void* arg);
 static void thread_b(void* arg);
+=======
+#include "drivers/driver.h"
+
+
+>>>>>>> 21a5480 (Implement Driver Manager framework)
 
 
 
@@ -192,9 +198,17 @@ static void kernel_initialize_interrupts(void)
    Memory Initialization
 ------------------------------------------------- */
 
+HEAD
 static void kernel_initialize_memory(void)
 {
     memory_map_init();
+=======
+static void kernel_initialize_kernel(void)
+{
+    /* =====================================================
+     * Universal Kernel Foundation
+     * ===================================================== */
+ 21a5480 (Implement Driver Manager framework)
 
     boot_step_ok(
         "Memory Map Initialized"
@@ -386,15 +400,33 @@ static void kernel_initialize_kernel(void)
 
     xk_config_init();
 
+HEAD
     boot_step_ok(
         "Configuration Manager Initialized"
     );
 
+    /* =====================================================
+     * Driver Framework
+     * ===================================================== */
 
+    xk_driver_manager_init();
+    boot_step_ok("Driver Manager Initialized");
+
+    /* =====================================================
+     * Future Kernel Subsystems
+     * ===================================================== */
+ 21a5480 (Implement Driver Manager framework)
+
+
+ HEAD
     execution_create(
         thread_a,
         NULL
     );
+
+    boot_step_warn("ACPI Not Found");
+    boot_step_fail("PCI Enumeration Failed");
+ 21a5480 (Implement Driver Manager framework)
 
 
     execution_create(
@@ -413,6 +445,7 @@ if (heap_test1 != NULL && heap_test2 != NULL)
 {
     boot_step_ok("Kernel Heap Test Passed");
 }
+ HEAD
 else
 {
     boot_step_fail("Kernel Heap Test Failed");
@@ -457,6 +490,10 @@ run_kernel_tests();
 
 
 
+
+ 21a5480 (Implement Driver Manager framework)
+
+
 /* -------------------------------------------------
    Kernel Entry
 ------------------------------------------------- */
@@ -489,3 +526,4 @@ void kernel_main(void)
 
     kernel_idle();
 }
+

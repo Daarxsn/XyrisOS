@@ -92,6 +92,11 @@ add_executable(kernel.elf
 
     # Boot
     kernel/boot/boot.c
+
+    #drivers 
+    kernel/drivers/driver.c
+
+
 )
 
 
