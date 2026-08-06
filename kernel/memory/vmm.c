@@ -111,6 +111,48 @@ static inline bool entry_huge(uint64_t entry)
     return (entry & VMM_HUGE) != 0;
 }
 
+static void free_page_tables(
+    uint64_t* table,
+    int level)
+{
+    if (table == NULL)
+        return;
+
+    /*
+     * level:
+     * 3 = PML4
+     * 2 = PDPT
+     * 1 = PD
+     * 0 = PT
+     */
+
+    if (level > 0)
+    {
+        for (size_t i = 0; i < ENTRIES_PER_TABLE; i++)
+        {
+            uint64_t entry = table[i];
+
+            if (!(entry & VMM_PRESENT))
+                continue;
+
+            /*
+             * Ignore huge pages.
+             */
+            if ((level == 2 || level == 1) &&
+                (entry & VMM_HUGE))
+            {
+                continue;
+            }
+
+            free_page_tables(
+                page_table_from_entry(entry),
+                level - 1);
+        }
+    }
+
+    pmm_free_page(
+        (phys_addr_t)virt_to_phys(table));
+}
 
 static uint64_t* allocate_table(void)
 {
@@ -416,7 +458,7 @@ bool vmm_protect_page(
     uintptr_t virtual_addr,
     uint64_t flags)
 
-    
+
 {
     if (space == NULL)
         return false;
@@ -577,19 +619,31 @@ address_space_t* vmm_create_space(void)
 }
 
 
-
-
-
 void vmm_destroy_space(address_space_t* space)
 {
     if (space == NULL)
         return;
 
-
     /*
-       Phase 1:
-       - Page table freeing not implemented
-       - Mapped page freeing not implemented
-       - Space freeing not implemented
-    */
+     * Free only user-space page tables.
+     * Kernel mappings are shared.
+     */
+    for (size_t i = 0; i < 256; i++)
+    {
+        uint64_t entry = space->pml4[i];
+
+        if (!(entry & VMM_PRESENT))
+            continue;
+
+        free_page_tables(
+            page_table_from_entry(entry),
+            2);
+    }
+
+    /* Free the PML4 */
+    pmm_free_page(
+        (phys_addr_t)virt_to_phys(space->pml4));
+
+    /* Free the address space structure */
+    kfree(space);
 }
