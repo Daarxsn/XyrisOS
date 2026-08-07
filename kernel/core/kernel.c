@@ -31,6 +31,9 @@
 #include "execution/scheduler.h"
 #include "drivers/driver.h"
 #include "drivers/keyboard.h"
+#include "drivers/mouse.h"
+#include "drivers/serial.h"
+#include "drivers/pci.h"
 #include "boot/boot.h"
 
 #include "image/image.h"
@@ -410,15 +413,35 @@ boot_step_ok(
     "Keyboard Driver Registered"
 );
 
+xk_driver_register(
+    &xk_mouse_driver
+);
+
+boot_step_ok(
+    "Mouse Driver Registered"
+);
+
 xk_driver_initialize_all();
 
 boot_step_ok(
     "All Registered Drivers Initialized"
 );
 
+xk_driver_register(
+    &xk_serial_driver
+);
 
+boot_step_ok(
+    "Serial Driver Registered"
+);
 
+xk_driver_register(
+    &xk_pci_driver
+);
 
+boot_step_ok(
+    "PCI Driver Registered"
+);
 
 
     /* =====================================================

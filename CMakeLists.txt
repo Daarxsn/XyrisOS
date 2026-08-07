@@ -96,7 +96,9 @@ add_executable(kernel.elf
     # Drivers
     kernel/drivers/driver.c
     kernel/drivers/keyboard.c
-
+    kernel/drivers/mouse.c
+    kernel/drivers/serial.c
+    kernel/drivers/pci.c
 
 )
 
