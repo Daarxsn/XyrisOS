@@ -30,6 +30,7 @@
 #include "execution/execution.h"
 #include "execution/scheduler.h"
 #include "drivers/driver.h"
+#include "drivers/keyboard.h"
 #include "boot/boot.h"
 
 #include "image/image.h"
@@ -390,15 +391,34 @@ static void kernel_initialize_kernel(void)
         "Configuration Manager Initialized"
     );
 
-    /* =====================================================
-     * Driver Framework
-     * ===================================================== */
 
-    xk_driver_manager_init();
+/* =====================================================
+ * Driver Framework
+ * ===================================================== */
 
-    boot_step_ok(
-        "Driver Manager Initialized"
-    );
+xk_driver_manager_init();
+
+boot_step_ok(
+    "Driver Manager Initialized"
+);
+
+xk_driver_register(
+    &xk_keyboard_driver
+);
+
+boot_step_ok(
+    "Keyboard Driver Registered"
+);
+
+xk_driver_initialize_all();
+
+boot_step_ok(
+    "All Registered Drivers Initialized"
+);
+
+
+
+
 
 
     /* =====================================================

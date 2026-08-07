@@ -93,8 +93,9 @@ add_executable(kernel.elf
     # Boot
     kernel/boot/boot.c
 
-    #drivers 
+    # Drivers
     kernel/drivers/driver.c
+    kernel/drivers/keyboard.c
 
 
 )
