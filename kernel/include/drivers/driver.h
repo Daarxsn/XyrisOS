@@ -68,4 +68,19 @@ void xk_driver_initialize_all(void);
 
 void xk_driver_shutdown_all(void);
 
+
+/* ------------------------------------------------------------
+ * Driver Registration API
+ * ------------------------------------------------------------ */
+
+bool xk_driver_unregister(
+    const char *name);
+
+uint32_t xk_driver_count(void);
+
+XKDriver *xk_driver_get(
+    uint32_t index);
+
+void xk_driver_dump(void);
+
 #endif

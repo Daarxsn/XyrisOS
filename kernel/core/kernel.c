@@ -29,29 +29,25 @@
 #include "execution/thread.h"
 #include "execution/execution.h"
 #include "execution/scheduler.h"
-
+#include "drivers/driver.h"
 #include "boot/boot.h"
 
 #include "image/image.h"
 #include "image/logo.h"
 
-<<<<<<< HEAD
 #include "../tests/tests.h"
-
 #include "debug/print.h"
 #include "debug/hex.h"
-
-#include "debug/print.h"
 #include "string.h"
 
 
 static void thread_a(void* arg);
 static void thread_b(void* arg);
-=======
-#include "drivers/driver.h"
 
 
->>>>>>> 21a5480 (Implement Driver Manager framework)
+
+
+
 
 
 
@@ -193,27 +189,17 @@ static void kernel_initialize_interrupts(void)
 }
 
 
-
 /* -------------------------------------------------
    Memory Initialization
 ------------------------------------------------- */
 
-HEAD
 static void kernel_initialize_memory(void)
 {
     memory_map_init();
-=======
-static void kernel_initialize_kernel(void)
-{
-    /* =====================================================
-     * Universal Kernel Foundation
-     * ===================================================== */
- 21a5480 (Implement Driver Manager framework)
 
     boot_step_ok(
         "Memory Map Initialized"
     );
-
 
     hhdm_init();
 
@@ -221,90 +207,89 @@ static void kernel_initialize_kernel(void)
         "HHDM Initialized"
     );
 
-
     pmm_init();
 
-pmm_stats_t stats = pmm_get_stats();
+    pmm_stats_t stats = pmm_get_stats();
 
-if (stats.free_pages > 0)
-{
-    boot_step_ok("PMM Has Free Pages");
-}
-else
-{
-    boot_step_fail("PMM Has NO Free Pages");
-}
+    if (stats.free_pages > 0)
+    {
+        boot_step_ok("PMM Has Free Pages");
+    }
+    else
+    {
+        boot_step_fail("PMM Has NO Free Pages");
+    }
 
-boot_step_ok("Physical Memory Manager Initialized");
+    boot_step_ok("Physical Memory Manager Initialized");
 
-/* ------------------------------------
-   Memory Statistics
------------------------------------- */
+    /* ------------------------------------
+       Memory Statistics
+    ------------------------------------ */
 
-debug_print_line("");
-debug_print_line("========== MEMORY STATISTICS ==========");
+    debug_print_line("");
+    debug_print_line("========== MEMORY STATISTICS ==========");
 
-uint64_t total_mb =
-    stats.total_memory / (1024 * 1024);
+    uint64_t total_mb =
+        stats.total_memory / (1024 * 1024);
 
-uint64_t usable_mb =
-    stats.usable_memory / (1024 * 1024);
+    uint64_t usable_mb =
+        stats.usable_memory / (1024 * 1024);
 
-uint64_t reserved_mb =
-    stats.reserved_memory / (1024 * 1024);
+    uint64_t reserved_mb =
+        stats.reserved_memory / (1024 * 1024);
 
-char buffer[32];
+    char buffer[32];
 
-debug_print("Total Memory    : ");
-itoa(total_mb, buffer, 10);
-debug_print(buffer);
-debug_print_line(" MB");
+    debug_print("Total Memory    : ");
+    itoa(total_mb, buffer, 10);
+    debug_print(buffer);
+    debug_print_line(" MB");
 
-debug_print("Usable Memory   : ");
-itoa(usable_mb, buffer, 10);
-debug_print(buffer);
-debug_print_line(" MB");
+    debug_print("Usable Memory   : ");
+    itoa(usable_mb, buffer, 10);
+    debug_print(buffer);
+    debug_print_line(" MB");
 
-debug_print("Reserved Memory : ");
-itoa(reserved_mb, buffer, 10);
-debug_print(buffer);
-debug_print_line(" MB");
+    debug_print("Reserved Memory : ");
+    itoa(reserved_mb, buffer, 10);
+    debug_print(buffer);
+    debug_print_line(" MB");
 
-debug_print("Total Pages     : ");
-itoa(stats.total_pages, buffer, 10);
-debug_print_line(buffer);
+    debug_print("Total Pages     : ");
+    itoa(stats.total_pages, buffer, 10);
+    debug_print_line(buffer);
 
-debug_print("Free Pages      : ");
-itoa(stats.free_pages, buffer, 10);
-debug_print_line(buffer);
+    debug_print("Free Pages      : ");
+    itoa(stats.free_pages, buffer, 10);
+    debug_print_line(buffer);
 
-debug_print("Used Pages      : ");
-itoa(stats.used_pages, buffer, 10);
-debug_print_line(buffer);
+    debug_print("Used Pages      : ");
+    itoa(stats.used_pages, buffer, 10);
+    debug_print_line(buffer);
 
-debug_print("Reserved Pages  : ");
-itoa(stats.reserved_pages, buffer, 10);
-debug_print_line(buffer);
+    debug_print("Reserved Pages  : ");
+    itoa(stats.reserved_pages, buffer, 10);
+    debug_print_line(buffer);
 
-debug_print_line("=======================================");
-debug_print_line("");
+    debug_print_line("=======================================");
+    debug_print_line("");
 
     heap_init();
-    void* heap_debug = kmalloc(16);
 
-if (heap_debug)
-{
-    boot_step_ok("Heap Allocation Working");
-}
-else
-{
-    boot_step_fail("Heap Allocation Broken");
-}
+    void *heap_debug = kmalloc(16);
+
+    if (heap_debug)
+    {
+        boot_step_ok("Heap Allocation Working");
+    }
+    else
+    {
+        boot_step_fail("Heap Allocation Broken");
+    }
 
     boot_step_ok(
         "Kernel Heap Initialized"
     );
-
 
     vmm_init();
 
@@ -400,7 +385,7 @@ static void kernel_initialize_kernel(void)
 
     xk_config_init();
 
-HEAD
+
     boot_step_ok(
         "Configuration Manager Initialized"
     );
@@ -410,89 +395,80 @@ HEAD
      * ===================================================== */
 
     xk_driver_manager_init();
-    boot_step_ok("Driver Manager Initialized");
+
+    boot_step_ok(
+        "Driver Manager Initialized"
+    );
+
 
     /* =====================================================
      * Future Kernel Subsystems
      * ===================================================== */
- 21a5480 (Implement Driver Manager framework)
 
-
- HEAD
     execution_create(
         thread_a,
         NULL
     );
-
-    boot_step_warn("ACPI Not Found");
-    boot_step_fail("PCI Enumeration Failed");
- 21a5480 (Implement Driver Manager framework)
-
 
     execution_create(
         thread_b,
         NULL
     );
 
+    boot_step_warn("ACPI Not Found");
+    boot_step_fail("PCI Enumeration Failed");
+
     /* -------------------------------------------------
-   Heap Test
-------------------------------------------------- */
+       Heap Test
+    ------------------------------------------------- */
 
-void* heap_test1 = kmalloc(64);
-void* heap_test2 = kmalloc(128);
+    void *heap_test1 = kmalloc(64);
+    void *heap_test2 = kmalloc(128);
 
-if (heap_test1 != NULL && heap_test2 != NULL)
-{
-    boot_step_ok("Kernel Heap Test Passed");
-}
- HEAD
-else
-{
-    boot_step_fail("Kernel Heap Test Failed");
-}
-
-kfree(heap_test1);
-kfree(heap_test2);
-/* ------------------------------
-   VMM Test
------------------------------- */
-
-phys_addr_t page = pmm_alloc_page();
-
-if (page != 0)
-{
-    if (vmm_map_page(
-            vmm_kernel_space(),
-            0xFFFF900000000000ULL,
-            page,
-            VMM_WRITABLE))
+    if (heap_test1 != NULL && heap_test2 != NULL)
     {
-        boot_step_ok("Virtual Memory Manager Test Passed");
+        boot_step_ok("Kernel Heap Test Passed");
     }
     else
     {
-        boot_step_fail("Virtual Memory Manager Test Failed");
+        boot_step_fail("Kernel Heap Test Failed");
     }
-}
-else
-{
-    boot_step_fail("PMM Allocation Failed");
-}
 
+    kfree(heap_test1);
+    kfree(heap_test2);
 
+    /* -------------------------------------------------
+       VMM Test
+    ------------------------------------------------- */
 
-run_kernel_tests();
+    phys_addr_t page = pmm_alloc_page();
+
+    if (page != 0)
+    {
+        if (vmm_map_page(
+                vmm_kernel_space(),
+                0xFFFF900000000000ULL,
+                page,
+                VMM_WRITABLE))
+        {
+            boot_step_ok("Virtual Memory Manager Test Passed");
+        }
+        else
+        {
+            boot_step_fail("Virtual Memory Manager Test Failed");
+        }
+    }
+    else
+    {
+        boot_step_fail("PMM Allocation Failed");
+    }
+
+    run_kernel_tests();
 
     boot_success(
         "Kernel Ready"
     );
 }
-
-
-
-
- 21a5480 (Implement Driver Manager framework)
-
 
 /* -------------------------------------------------
    Kernel Entry
@@ -500,30 +476,22 @@ run_kernel_tests();
 
 void kernel_main(void)
 {
-    struct limine_framebuffer* framebuffer =
+    struct limine_framebuffer *framebuffer =
         kernel_verify_bootloader();
-
 
     kernel_initialize_graphics(
         framebuffer
     );
 
-
     kernel_initialize_cpu();
-
 
     kernel_initialize_memory();
 
-
     kernel_initialize_execution();
-
 
     kernel_initialize_kernel();
 
-
     kernel_initialize_interrupts();
-
 
     kernel_idle();
 }
-
